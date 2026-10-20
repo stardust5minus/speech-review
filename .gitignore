@@ -1,0 +1,23 @@
+# Research materials and local state
+data/
+runtime/
+work/
+*.wav
+*.WAV
+*.mp3
+*.flac
+*.aiff
+*.TextGrid
+*.log
+*.zip
+# Dependencies and credentials
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+.ipynb_checkpoints/
+.DS_Store

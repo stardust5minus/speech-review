@@ -1,0 +1,14 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+  "python.terminal.activateEnvironment": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "runtime/mamba/pkgs": true
+  },
+  "search.exclude": {
+    ".venv": true,
+    "runtime": true,
+    "data": true,
+    "frontend/node_modules": true
+  }
+}

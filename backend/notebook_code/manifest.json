@@ -1,0 +1,66 @@
+{
+  "source": "Copy_of_Transcribe_audio_to_text (1).ipynb",
+  "sha256": "2109d5b9d7e3949b6e920b40852f3c667271622093ae22289a6a6aee1a4fe958",
+  "profiles": {
+    "number": {
+      "cell_index": 9,
+      "symbols": [
+        "DIGITS",
+        "FILLERS",
+        "PROMPT",
+        "tokenize_zh",
+        "detect_silent",
+        "detect_disfluency",
+        "detect_self_correction",
+        "detect_wrong_word"
+      ]
+    },
+    "homo": {
+      "cell_index": 18,
+      "symbols": [
+        "TARGETS",
+        "FILLERS",
+        "ALLOW_MISC",
+        "NUM_WORDS",
+        "NUM_TO_TARGET",
+        "HOMO_CONFUSABLES",
+        "ALL_CONFUSABLES",
+        "PROMPT",
+        "tokenize_zh",
+        "map_numbers_to_targets",
+        "detect_silent",
+        "detect_disfluency",
+        "detect_self_correction",
+        "detect_wrong_word",
+        "count_number_words",
+        "classify_bad_words",
+        "load_gold",
+        "compare_with_gold"
+      ]
+    },
+    "nonhomo": {
+      "cell_index": 19,
+      "symbols": [
+        "TARGETS",
+        "FILLERS",
+        "TARGET_PINYIN",
+        "PINYIN_TO_TARGET",
+        "FORCE_MAP",
+        "PINYIN_SEQ_MAP",
+        "PROMPT",
+        "preprocess_raw",
+        "tokenize_zh",
+        "normalize_tokens",
+        "deduplicate",
+        "get_pinyin_key",
+        "classify_token",
+        "detect_silent",
+        "detect_disfluency",
+        "detect_self_correction",
+        "detect_issues",
+        "load_gold",
+        "compare_with_gold"
+      ]
+    }
+  }
+}

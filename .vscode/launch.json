@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run speech review (local)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "python": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["backend.main:app", "--host", "127.0.0.1", "--port", "8765"],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "justMyCode": true,
+      "env": {"PYTHONUTF8": "1"},
+      "serverReadyAction": {
+        "pattern": "Uvicorn running on (https?://\\S+)",
+        "uriFormat": "%s/?view=alignment",
+        "action": "openExternally"
+      }
+    }
+  ]
+}

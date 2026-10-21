@@ -116,3 +116,21 @@ cd ..
 
 ## Google Colab 版本
 另有独立的 SpeechReview_Colab.ipynb，内置程序代码。上传到 Colab 后按步骤安装 Python、Linux MFA，选择上传录音 ZIP 或 Drive 文件夹，再以内嵌方式使用原工作台。完整 Web UI 适用于允许此用法且有可用额度的 Pro 等运行时；不创建公共隧道或自动保活。原 notebook 提示词和参数保持不变。临时文件和模型留在 Colab 磁盘，可选把输入与项目修订保存到自己的 Drive。内嵌版禁用新窗口链接，允许在浏览器存储不可用时继续选择项目。iPad 触控和 Colab 云端端到端执行仍需实机验收。
+
+
+
+## TextGrid 文字与边界编辑
+
+在“对齐与边界编辑”中，点击波形设置光标，或输入精确光标时间。选中区间可增加、修改或清空文字，空白区间也可加字。拖动内部边界或修改开始／结束时间；完整音频首尾固定。
+
+- Enter：在时间光标处增加边界。文字按文字输入框的光标位置拆分；默认原文留在左侧。
+- Alt/Option + Backspace：删除选中区间的左边界，合并相邻区间；文字拼接，相同文字仅保留一份，与 Praat 的合并规则一致。
+- Ctrl/Cmd + Z：撤销区间修改（文字输入框内保留原生文本撤销）。
+- Ctrl/Cmd + S：保存人工边界与文字。
+- Alt + 左／右：选择相邻区间；空格播放选中区间；双击下方区间条复听。
+
+核心边界快捷键参照 [Praat TextGridEditor](https://www.fon.hum.uva.nl/praat/manual/TextGridEditor.html)。只在当前波形／编辑器聚焦时生效，不影响其他转写框。中文输入法组合期间不触发编辑快捷键。也可点击按钮，无需键盘。
+
+“保存人工边界”同时保存 TextGrid 文字和修订 TXT，保留旧文字历史与原始 Whisper。文字改变后旧自动版可能显示过期，人工版保持有效；无需先重跑 MFA。自动对齐仍严格校验字词顺序，人工版允许空白区间和合并后的标签。
+
+“一键导出人工 TextGrid”只打包已保存、有效的 reviewed 版本，不用自动版替代缺失的人工版。ZIP 内文件直接使用音频主名，例如 `3nonhomo_069_trial9.wav` → `3nonhomo_069_trial9.TextGrid`。原“导出全部 TextGrid”继续分开导出 auto/reviewed 文件。

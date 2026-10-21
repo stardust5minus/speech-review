@@ -20,6 +20,7 @@ class Reviewed(BaseModel):
     intervals:list[Boundary]
     transcript:str
     base_id:str
+    update_transcript:bool=False
 
 class Imported(BaseModel):
     content:str=Field(max_length=5_000_000)
@@ -44,7 +45,7 @@ def view(pid:str,tid:str):return alignment.view(pid,tid)
 
 @router.put('/projects/{pid}/trials/{tid}/alignment')
 def reviewed(pid:str,tid:str,body:Reviewed):
-    return alignment.save_reviewed(pid,tid,[i.model_dump() for i in body.intervals],body.transcript,body.base_id)
+    return alignment.save_reviewed(pid,tid,[i.model_dump() for i in body.intervals],body.transcript,body.base_id,body.update_transcript)
 
 @router.post('/projects/{pid}/trials/{tid}/alignment/import')
 def imported(pid:str,tid:str,body:Imported):return alignment.import_reviewed(pid,tid,body.content)
@@ -81,6 +82,19 @@ def textgrids(pid:str):
         raise ValueError('尚无有效 TextGrid：请先保存修订 TXT，再点击“一键对齐已保存条目”，等待 MFA 完成后导出。')
     with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:write_grids(z,p)
     return Response(out.getvalue(),media_type='application/zip',headers={'Content-Disposition':'attachment; filename="TextGrids.zip"'})
+
+@router.get('/projects/{pid}/reviewed-textgrids')
+def reviewed_textgrids(pid:str):
+    from .textgrid import serialize
+    p=storage.read(pid)
+    selected=[(t,r) for t,version,r in records(p) if version=='reviewed']
+    if not selected:raise ValueError('尚无有效人工版 TextGrid，请先保存人工边界。')
+    names=[Path(t['filename']).stem+'.TextGrid' for t,r in selected]
+    if len({n.casefold() for n in names})!=len(names):raise ValueError('人工版文件名重复，无法安全导出。')
+    out=io.BytesIO()
+    with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:
+        for name,(t,r) in zip(names,selected):z.writestr(name,serialize(r['intervals'],r['duration']))
+    return Response(out.getvalue(),media_type='application/zip',headers={'Content-Disposition':'attachment; filename="reviewed_TextGrids.zip"'})
 
 @router.get('/projects/{pid}/alignment.csv')
 def csv_export(pid:str):

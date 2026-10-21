@@ -36,9 +36,9 @@ def view(pid,tid):
         result[version]={**record,'stale':not valid_for(record,t)} if record else None
     return result
 
-def save_version(pid,tid,version,record,base_id=None):
+def save_version(pid,tid,version,record,base_id=None,previous_transcript=None):
     def apply(t):
-        if t.get('corrected')!=record['transcript'] or fingerprint(t['audio_path'])!=record['audio_reference']:
+        if t.get('corrected')!=(previous_transcript if previous_transcript is not None else record['transcript']) or fingerprint(t['audio_path'])!=record['audio_reference']:
             raise ValueError('转写或音频已改变，不能保存本次边界；请重新对齐')
         current=t.setdefault('alignments',{})
         if base_id and base_id not in [r['id'] for r in current.values() if r]:
@@ -50,11 +50,16 @@ def save_version(pid,tid,version,record,base_id=None):
         # Every version has an immutable artifact. Downloads use committed JSON,
         # so an interrupted write cannot replace an already reviewed download.
         storage.atomic(storage.DATA/pid/'textgrids'/'versions'/(record['id']+'.TextGrid'),textgrid.serialize(record['intervals'],record['duration']))
+        if previous_transcript is not None and record['transcript']!=t['corrected']:
+            from datetime import datetime,timezone
+            t['history'].append({k:t[k] for k in ('corrected','labels','notes','complete')}|{'time':datetime.now(timezone.utc).isoformat(),'source':'TextGrid editor'})
+            t['corrected']=record['transcript']
+            storage.atomic(storage.DATA/pid/'corrected'/t['txt_name'],t['corrected']+'\n')
     storage.update(pid,tid,apply)
 
-def make_record(t,intervals,audio_duration,engine):
+def make_record(t,intervals,audio_duration,engine,manual=False):
     return {'id':uuid.uuid4().hex,'transcript':t['corrected'],'transcript_sha256':hashlib.sha256(t['corrected'].encode()).hexdigest(),
-        'audio_reference':fingerprint(t['audio_path']),'duration':audio_duration,'intervals':textgrid.validate(intervals,audio_duration,t['corrected']),
+        'audio_reference':fingerprint(t['audio_path']),'duration':audio_duration,'intervals':textgrid.validate(intervals,audio_duration,t['corrected'],manual=manual),
         'engine':engine,'created_at':time.time()}
 
 def persist(jid):
@@ -144,14 +149,15 @@ def latest_job(pid):
     found=[i for i,j in jobs.items() if j['project_id']==pid]
     return job_view(max(found,key=lambda i:jobs[i]['started_at'])) if found else None
 
-def save_reviewed(pid,tid,intervals,transcript,base_id):
+def save_reviewed(pid,tid,intervals,transcript,base_id,update_transcript=False):
     t=storage.trial(storage.read(pid),tid)
     if not t.get('saved') or transcript!=t['corrected']:raise ValueError('文字已改变，请先保存修订文字并重新对齐')
     base=next((r for r in t.get('alignments',{}).values() if r and r['id']==base_id),None)
     if not base or not valid_for(base,t):raise ValueError('原对齐已过期，请重新载入有效对齐')
-    record=make_record(t,intervals,base['duration'],'human reviewed')
+    edited=' '.join(word for i in intervals for word in i['text'].split())
+    record=make_record({**t,'corrected':edited if update_transcript else transcript},intervals,base['duration'],'human reviewed',manual=update_transcript)
     record['base_id']=base_id
-    save_version(pid,tid,'reviewed',record,base_id)
+    save_version(pid,tid,'reviewed',record,base_id,previous_transcript=transcript if update_transcript else None)
     return view(pid,tid)
 
 def import_reviewed(pid,tid,content):
@@ -160,8 +166,8 @@ def import_reviewed(pid,tid,content):
     path=storage.DATA/pid/'imports'/(uuid.uuid4().hex+'.TextGrid')
     storage.atomic(path,content)
     audio_duration=duration(t['audio_path'])
-    intervals=textgrid.parse(path,audio_duration,t['corrected'])
-    record=make_record(t,intervals,audio_duration,'imported human reviewed TextGrid')
+    intervals=textgrid.parse(path,audio_duration,t['corrected'],manual=True)
+    record=make_record(t,intervals,audio_duration,'imported human reviewed TextGrid',manual=True)
     save_version(pid,tid,'reviewed',record)
     return view(pid,tid)
 

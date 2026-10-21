@@ -9,6 +9,7 @@ export default function TrialCard({trial:t,pid,onSaved,onTranscribe,busy,active,
  const [version,setVersion]=useState(t.asr);
  const latestReview=useRef();latestReview.current={payload:{corrected:draft,labels,notes,complete},eligible:!!(draft.trim()||t.saved||t.asr||labels.includes('silent'))};
  useEffect(()=>{if(!register)return;register(t.id,{snapshot:()=>latestReview.current,acknowledge:payload=>{if(JSON.stringify(latestReview.current.payload)===JSON.stringify(payload)){setDirty(false);onDirty(t.id,false);setMessage('已保存')}else setMessage('已保存提交时的版本，当前修改仍需保存')}});return()=>register(t.id,null)},[register,t.id]);
+ const previousCorrected=useRef(t.corrected);useEffect(()=>{if(previousCorrected.current!==t.corrected&&!dirty)setDraft(t.corrected??'');previousCorrected.current=t.corrected},[t.corrected,dirty]);
  if(version!==t.asr){setVersion(t.asr);if(!dirty)setDraft(t.corrected??'')}
  function change(fn){fn();setDirty(true);onDirty(t.id,true);setMessage('')}
  async function save(){setSaving(true);try{const row=await api(`/projects/${pid}/trials/${t.id}`,'PUT',{corrected:draft,labels,notes,complete});setDirty(false);onDirty(t.id,false);setMessage('已保存');onSaved(row)}catch(e){setMessage(e.message)}finally{setSaving(false)}}

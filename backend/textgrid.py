@@ -2,7 +2,7 @@
 import math
 from pathlib import Path
 
-def validate(intervals,duration,transcript=None):
+def validate(intervals,duration,transcript=None,manual=False):
     if not math.isfinite(duration) or duration<=0:
         raise ValueError('无效音频时长')
     result=[]
@@ -12,17 +12,18 @@ def validate(intervals,duration,transcript=None):
         text=str(item['text'])
         if not math.isfinite(start) or not math.isfinite(end) or start<0 or end>duration+1e-7 or end<=start or start<previous-1e-7:
             raise ValueError('边界必须在音频范围内，开始小于结束，且按顺序排列、不重叠')
-        if text.strip():
-            if text!=text.strip() or any(c.isspace() for c in text):
+        if text.strip() or manual:
+            if not manual and (text!=text.strip() or any(c.isspace() for c in text)):
                 raise ValueError('一个区间应对应一个非空 token，不能包含空格')
             result.append({'start':start,'end':min(end,duration),'text':text})
         previous=end
-    if transcript is not None and [i['text'] for i in result]!=transcript.split():
+    labels=[word for i in result for word in i['text'].split()] if manual else [i['text'] for i in result]
+    if transcript is not None and labels!=transcript.split():
         raise ValueError('对齐字词与已保存修订文本不一致（可能存在缺词、合词或 OOV）；请先核查文字／词典后重新对齐，不能把不匹配结果用于分析')
     return result
 
 def serialize(intervals,duration):
-    words=validate(intervals,duration)
+    words=validate(intervals,duration,manual=True)
     parts=[]
     cursor=0.0
     for word in words:
@@ -38,7 +39,7 @@ def serialize(intervals,duration):
         lines.extend([f'        intervals [{idx}]:',f'            xmin = {part["start"]:.9f}',f'            xmax = {part["end"]:.9f}',f'            text = {quote(part["text"])}'])
     return '\n'.join(lines)+'\n'
 
-def parse(path,duration=None,transcript=None):
+def parse(path,duration=None,transcript=None,manual=False):
     from praatio import textgrid as praat
     grid=praat.openTextgrid(str(path),includeEmptyIntervals=True)
     tiers=[grid.getTier(name) for name in grid.tierNames if name.lower().endswith('words')]
@@ -50,4 +51,4 @@ def parse(path,duration=None,transcript=None):
     if duration is not None and (abs(grid.minTimestamp)>1e-6 or abs(grid.maxTimestamp-duration)>0.02):
         raise ValueError('TextGrid 的起止时间与完整音频不一致')
     intervals=[{'start':e.start,'end':min(e.end,duration) if duration is not None and e.end-duration<0.02 else e.end,'text':e.label} for e in tier.entries]
-    return validate(intervals,duration or grid.maxTimestamp,transcript)
+    return validate(intervals,duration or grid.maxTimestamp,transcript,manual=manual)

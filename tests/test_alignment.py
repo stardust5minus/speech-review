@@ -87,6 +87,40 @@ class AlignmentFlow(unittest.TestCase):
         self.assertEqual(r.status_code,400)
         self.assertIn('不一致',r.json()['detail'])
         self.assertIsNone(alignment.view(self.pid,'1')['reviewed'])
+    def test_edit_labels_split_empty_intervals_and_export_plain_names(self):
+        base=self.auto()
+        words=[{'text':'三 呃','start':0,'end':.4},{'text':'新增','start':.4,'end':.6},{'text':'','start':.6,'end':.7},{'text':'四','start':.7,'end':1}]
+        response=self.client.put(f'/api/projects/{self.pid}/trials/1/alignment',json={'intervals':words,'transcript':base['transcript'],'base_id':base['id'],'update_transcript':True})
+        self.assertEqual(response.status_code,200,response.text)
+        row=storage.trial(storage.read(self.pid),'1')
+        self.assertEqual(row['corrected'],'三 呃 新增 四')
+        self.assertEqual(row['asr']['raw'],'绝对不用于对齐')
+        self.assertEqual(row['history'][-1]['corrected'],'三 呃 四')
+        self.assertEqual((storage.DATA/self.pid/'corrected'/'trial1.txt').read_text(encoding='utf-8'),'三 呃 新增 四\n')
+        self.assertTrue(alignment.view(self.pid,'1')['auto']['stale'])
+        self.assertFalse(alignment.view(self.pid,'1')['reviewed']['stale'])
+        with zipfile.ZipFile(io.BytesIO(self.client.get(f'/api/projects/{self.pid}/reviewed-textgrids').content)) as z:
+            self.assertEqual(z.namelist(),['trial1.TextGrid'])
+            path=self.root/'manual.TextGrid';path.write_bytes(z.read('trial1.TextGrid'))
+            self.assertEqual(textgrid.parse(path,1,row['corrected'],manual=True),words)
+        stale=self.client.put(f'/api/projects/{self.pid}/trials/1/alignment',json={'intervals':words,'transcript':base['transcript'],'base_id':base['id'],'update_transcript':True})
+        self.assertEqual(stale.status_code,400)
+        storage.save_review(self.pid,'1',{'corrected':'新 文字','labels':[],'notes':'','complete':True})
+        self.assertEqual(self.client.get(f'/api/projects/{self.pid}/reviewed-textgrids').status_code,400)
+    def test_plain_named_export_never_falls_back_to_auto(self):
+        base=self.auto()
+        self.assertEqual(self.client.get(f'/api/projects/{self.pid}/reviewed-textgrids').status_code,400)
+        self.review(base)
+        storage.update(self.pid,'1',lambda t:t.update(filename='3nonhomo_069_trial9.wav'))
+        response=self.client.get(f'/api/projects/{self.pid}/reviewed-textgrids')
+        self.assertEqual(response.status_code,200)
+        with zipfile.ZipFile(io.BytesIO(response.content)) as z:self.assertEqual(z.namelist(),['3nonhomo_069_trial9.TextGrid'])
+    def test_invalid_label_edit_preserves_txt_and_previous_grid(self):
+        base=self.auto();words=[{'text':'替换','start':.1,'end':2}]
+        response=self.client.put(f'/api/projects/{self.pid}/trials/1/alignment',json={'intervals':words,'transcript':base['transcript'],'base_id':base['id'],'update_transcript':True})
+        self.assertEqual(response.status_code,400)
+        self.assertEqual(storage.trial(storage.read(self.pid),'1')['corrected'],'三 呃 四')
+        self.assertIsNone(alignment.view(self.pid,'1')['reviewed'])
     def test_batch_shares_one_mfa_invocation(self):
         import copy,shutil
         p=storage.read(self.pid);second=copy.deepcopy(p['trials'][0]);second.update(id='2',filename='trial2.wav',txt_name='trial2.txt',audio_path=str(self.wav.with_name('trial2.wav')))

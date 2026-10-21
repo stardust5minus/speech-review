@@ -10,6 +10,8 @@ This repository includes source code and the built frontend, with no recordings,
 
 # 本地复听工作台 — 转写、复听与 MFA/TextGrid
 
+鼠标拖选复听：在波形主体按住鼠标左键拖动，松开后自动播放高亮范围，到选区末尾停止。支持跨字词、反向拖选和缩放。空格或播放选区按钮可重播；清除选区可恢复普通播放。选择播放范围不改动文字和人工边界，拖动边界手柄仍调整字词时间。
+
 界面按复听卡片排列：波形、播放／定位／缩放、Whisper 模型原文与候选诊断、折叠原 TXT、预填复听结论、Save、人工标签、备注、完成标记。
 
 ## Windows 安装和启动

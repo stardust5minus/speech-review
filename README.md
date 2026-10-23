@@ -57,7 +57,7 @@ Keyboard controls while the editor is active:
 
 - Space: play the selected range or interval.
 - Enter: insert a boundary at the time cursor; text can split at the input caret.
-- Alt+Backspace: remove the selected boundary and merge adjacent labels.
+- Delete or Backspace (Alt+Backspace is also supported): remove the selected boundary and merge adjacent labels.
 - Ctrl+Z: undo boundary edits.
 - Ctrl+S: save reviewed boundaries.
 

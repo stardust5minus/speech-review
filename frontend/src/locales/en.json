@@ -244,5 +244,10 @@
   "Whisper 正在识别": "Whisper is transcribing",
   "）": ")",
   "红色竖线是播放／编辑光标；暂停后停在当前位置，Enter 增加边界。Shift + 单击只定位、不播放；空格播放／暂停。": "The red bar is the playback / edit cursor. Pause to keep it in place; Enter inserts a boundary there. Shift + click positions it without playback. Space plays / pauses.",
-  "红色竖线是播放／编辑光标；长按波形暂停并定位，继续拖动可微调，松开保持暂停。Enter 增加边界；Shift + 单击只定位；空格播放／暂停。": "The red bar is the playback / edit cursor. Hold the waveform to pause and position it; keep holding and drag to fine-tune. Release stays paused. Enter inserts a boundary; Shift + click positions; Space plays / pauses."
+  "红色竖线是播放／编辑光标；长按波形暂停并定位，继续拖动可微调，松开保持暂停。Enter 增加边界；Shift + 单击只定位；空格播放／暂停。": "The red bar is the playback / edit cursor. Hold the waveform to pause and position it; keep holding and drag to fine-tune. Release stays paused. Enter inserts a boundary; Shift + click positions; Space plays / pauses.",
+  "删除左边界（Delete / Alt + Backspace）": "Remove left boundary (Delete / Alt + Backspace)",
+  "单击下方区间条复听并选中；在上方波形拖动边界或输入精确时间，相邻共用边界会联动。选中区间后可直接修改文字；保存时同步修订 TXT。Enter 增加边界，Delete / Alt/Option + Backspace 删除所选区间左边界，Ctrl/Cmd + Z 撤销，Ctrl/Cmd + S 保存。": "Click an interval to select and listen. Drag waveform boundaries or enter precise times; shared edges move together. Edit selected text directly; saving synchronizes reviewed TXT. Enter: insert boundary. Delete / Alt/Option + Backspace: remove left boundary. Ctrl/Cmd + Z: undo. Ctrl/Cmd + S: save.",
+  "请选择内部边界；音频起止边界不能删除。": "Select an internal boundary. Audio endpoints cannot be deleted.",
+  "删除左边界（Delete / Backspace）": "Remove left boundary (Delete / Backspace)",
+  "单击下方区间条复听并选中；在上方波形拖动边界或输入精确时间，相邻共用边界会联动。选中区间后可直接修改文字；保存时同步修订 TXT。Enter 增加边界，Delete / Backspace 删除所选区间左边界，Ctrl/Cmd + Z 撤销，Ctrl/Cmd + S 保存。": "Click an interval to select and listen. Drag waveform boundaries or enter precise times; shared edges move together. Edit selected text directly; saving synchronizes reviewed TXT. Enter: insert boundary. Delete / Backspace: remove left boundary. Ctrl/Cmd + Z: undo. Ctrl/Cmd + S: save."
 }

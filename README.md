@@ -64,6 +64,8 @@ The CSV has `participant` and `annotation` columns: one participant per row, wit
 
 ## Google Colab
 
+[Open the shared Google Colab notebook](https://colab.research.google.com/drive/12JEJfQfNyENvVLifu2drSKOuZvG6l7FL?usp=sharing)
+
 Upload **SpeechReview_Colab_Public.ipynb** to Colab and run its cells in order. Step 8 provides a temporary public URL and generated login credentials for the full interface, including on an iPad. The interface opens in English and can switch to Chinese. See [Colab instructions](COLAB.md).
 
 The notebook embeds the application, so it does not need access to this private repository at runtime. Dependencies install in a separate Python environment. Optional Drive storage persists inputs, reviews, and boundaries; otherwise save and export before the runtime ends. The public URL expires when the runtime stops. Existing Drive notebook copies do not update automatically when this repository changes: upload the new notebook or replace its setup cells and rerun setup.

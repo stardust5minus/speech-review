@@ -1,5 +1,7 @@
 # Speech Review on Google Colab
 
+[Open the shared Google Colab notebook](https://colab.research.google.com/drive/12JEJfQfNyENvVLifu2drSKOuZvG6l7FL?usp=sharing). Save a copy to your Drive to keep your own notebook.
+
 1. Download `SpeechReview_Colab_Public.ipynb` from this repository and upload it through Colab's **File > Upload notebook**. This works with a private GitHub repository without granting Colab GitHub access.
 2. Run the cells in order. Installation logs are printed if a step fails. The public notebook uses an isolated Python environment and attempts to repair missing venv/pip support.
 3. Optionally enable `PERSIST_TO_DRIVE` and authorize Drive to keep inputs and reviews across runtimes. Without Drive, export results before disconnecting.

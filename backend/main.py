@@ -199,6 +199,8 @@ def report(pid:str):
 
 from .alignment_routes import router as alignment_router
 app.include_router(alignment_router)
+from .existing_import import router as existing_import_router
+app.include_router(existing_import_router)
 
 dist=Path(__file__).resolve().parents[1]/'frontend'/'dist'
 if dist.exists():

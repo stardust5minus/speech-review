@@ -42,11 +42,12 @@ def update(pid,tid,fn):
         write(project)
         return t
 
-def import_folder(folder,condition):
+def import_folder(folder,condition,managed=False):
     root=Path(folder).expanduser().resolve(strict=True)
     if not root.is_dir():
         raise ValueError('请选择文件夹')
-    if DATA.resolve()==root or DATA.resolve() in root.parents:
+    owned_input=managed and (DATA/'inputs').resolve() in root.parents
+    if (DATA.resolve()==root or DATA.resolve() in root.parents) and not owned_input:
         raise ValueError('不能导入应用的数据输出目录')
     with LOCK:
         DATA.mkdir(parents=True,exist_ok=True)

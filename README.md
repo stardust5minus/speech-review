@@ -10,6 +10,18 @@ This repository includes source code and the built frontend, with no recordings,
 
 # 本地复听工作台 — 转写、复听与 MFA/TextGrid
 
+## 导入已经生成的 WAV / TXT / TextGrid
+
+切换第二步“对齐与边界编辑”，点击“选择文件并一键导入”，同时选择同主名的 WAV、TXT 和 TextGrid；也可选择整个文件夹。支持多条录音，自动按主名配对。文件夹内不相关类型会忽略，不同目录有同名材料时请分批导入。
+
+识别 `主名.TextGrid`、`主名_reviewed.TextGrid` 和 `主名_auto.TextGrid`（按此顺序优先）。TextGrid 使用 words / word 层，也支持唯一的区间层；音频时长、边界范围和重叠必须通过校验。所有条目校验通过后才创建新项目。
+
+导入后的 TextGrid 作为 reviewed 人工版直接编辑，无需先跑 Whisper 或 MFA。修订 TXT 按 TextGrid 的文字预填并保存，原 TXT 与上传文件均保留作参考；文字不同时显示提示。不会覆盖正在使用的旧项目。普通话任务条件仍可在顶部选择或按文件名识别。
+
+上传副本在 `data/inputs/<导入ID>/`，修订和人工边界在独立项目目录。Colab 的 Drive 持久化设置同样适用。导入前保存当前未保存修改；文件较大时请分批导入。
+
+本地升级后需安装新增依赖：`.venv/Scripts/python.exe -m pip install -r requirements.txt`；Colab 从第 1 步重新运行会安装对应依赖。
+
 鼠标拖选复听：在波形主体按住鼠标左键拖动，松开后自动播放高亮范围，到选区末尾停止。支持跨字词、反向拖选和缩放。空格或播放选区按钮可重播；清除选区可恢复普通播放。选择播放范围不改动文字和人工边界，拖动边界手柄仍调整字词时间。
 
 界面按复听卡片排列：波形、播放／定位／缩放、Whisper 模型原文与候选诊断、折叠原 TXT、预填复听结论、Save、人工标签、备注、完成标记。

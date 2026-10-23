@@ -39,10 +39,13 @@ def serialize(intervals,duration):
         lines.extend([f'        intervals [{idx}]:',f'            xmin = {part["start"]:.9f}',f'            xmax = {part["end"]:.9f}',f'            text = {quote(part["text"])}'])
     return '\n'.join(lines)+'\n'
 
-def parse(path,duration=None,transcript=None,manual=False):
+def parse(path,duration=None,transcript=None,manual=False,flexible=False):
     from praatio import textgrid as praat
     grid=praat.openTextgrid(str(path),includeEmptyIntervals=True)
     tiers=[grid.getTier(name) for name in grid.tierNames if name.lower().endswith('words')]
+    if flexible and not tiers:
+        tiers=[grid.getTier(name) for name in grid.tierNames if name.casefold() in ('word','syllable','syllables','字词','字')]
+        if not tiers and len(grid.tierNames)==1:tiers=[grid.getTier(grid.tierNames[0])]
     if len(tiers)!=1:
         raise ValueError('TextGrid 必须有一个可明确识别的 words 区间层')
     tier=tiers[0]

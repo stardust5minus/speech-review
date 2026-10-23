@@ -12,3 +12,5 @@
 .annotation-export{background:#f4f9fa;border:1px solid #bcd3d9;border-radius:7px;padding:18px;margin:0 0 20px}.annotation-export p,.annotation-export small{font-size:12px;color:#5e7882;line-height:1.7}.annotation-preview{display:block;margin:12px 0;font-size:13px;font-weight:600}.annotation-preview textarea{display:block;width:100%;margin-top:6px;font-weight:400;line-height:1.8;background:#fff}.annotation-export details{margin-top:12px}.annotation-export .error{color:#a73728}
 
 .tier-cursor{position:absolute;top:0;bottom:0;width:2px;background:#dc3545;z-index:30;pointer-events:none;box-shadow:0 0 0 1px #fff9}.cursor-help{color:#943443!important}.audio-controls{flex-wrap:wrap}
+
+.usage-help{background:transparent;padding:4px 0;margin:8px 0;color:#71838b}.usage-help summary{font-size:12px;font-weight:400}.usage-help .hint,.usage-help p,.usage-help small{font-size:12px}.usage-help .cursor-help{color:#71838b!important}

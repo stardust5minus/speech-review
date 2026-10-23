@@ -13,7 +13,7 @@ Both editions include the complete bilingual workspace. First-time model downloa
 
 ## Interface language
 
-Choose **English** or **中文** in the page header. The preference is remembered on the current browser and origin. Switching languages does not reload the project or discard unsaved edits. Transcripts, interval labels, notes, and filenames stay in their original language.
+Choose **English** or **中文** in the page header. The preference is remembered on the current browser and origin. Switching languages does not reload the project or discard unsaved edits. Transcription and alignment tabs share the same TextGrid draft: label and timing edits follow when switching tabs, and Save writes the shared reviewed TextGrid. Detailed instructions are collapsed by default. Transcripts, interval labels, notes, and filenames stay in their original language.
 
 ## Windows app
 

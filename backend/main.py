@@ -91,6 +91,7 @@ class Review(BaseModel):
 
 class BulkReview(Review):
     id:str
+    annotation_only:bool=False
 
 class BulkSave(BaseModel):
     trials:list[BulkReview]
@@ -103,7 +104,9 @@ def save_all(pid:str,body:BulkSave):
     for tid in ids:storage.trial(project,tid)
     saved=[];errors=[]
     for row in body.trials:
-        try:saved.append(storage.save_review(pid,row.id,row.model_dump(exclude={'id'})))
+        try:
+            payload=row.model_dump(exclude={'id','annotation_only'})
+            saved.append(storage.save_annotations(pid,row.id,payload) if row.annotation_only else storage.save_review(pid,row.id,payload))
         except Exception as exc:errors.append({'trial':row.id,'message':str(exc)})
     return {'saved':saved,'errors':errors}
 
@@ -196,6 +199,15 @@ def export(pid:str):
 @app.get('/api/projects/{pid}/report')
 def report(pid:str):
     return Response(exports.report(storage.read(pid)),media_type='text/csv',headers={'Content-Disposition':'attachment; filename="report.csv"'})
+
+@app.get('/api/projects/{pid}/annotations')
+def annotations(pid:str,format:str='csv'):
+    project=storage.read(pid);rows=exports.annotation_rows(project)
+    if not rows:raise ValueError('暂无已保存的人工标注。请勾选标签，在备注填写具体问题，再保存或点击“保存并导出 Sheet 标注”。')
+    if format=='json':return {'rows':rows,'participants':len(rows)}
+    if format=='csv':return Response(exports.annotation_csv(project),media_type='text/csv',headers={'Content-Disposition':'attachment; filename="annotations_sheet.csv"'})
+    if format=='txt':return Response(exports.annotation_text(project),media_type='text/plain; charset=utf-8',headers={'Content-Disposition':'attachment; filename="annotations.txt"'})
+    raise ValueError('不支持的标注格式')
 
 from .alignment_routes import router as alignment_router
 app.include_router(alignment_router)

@@ -90,3 +90,11 @@ def save_review(pid,tid,payload):
         t['saved']=True
         atomic(DATA/pid/'corrected'/t['txt_name'],t['corrected']+'\n')
     return update(pid,tid,apply)
+
+def save_annotations(pid,tid,payload):
+    """Save label-only work without accepting an untouched blank transcript."""
+    def apply(t):
+        t['history'].append({k:t[k] for k in ('corrected','labels','notes','complete')}|{'time':datetime.now(timezone.utc).isoformat(),'source':'manual annotation'})
+        t.update({k:payload[k] for k in ('labels','notes','complete')})
+        t['annotations_saved']=True
+    return update(pid,tid,apply)

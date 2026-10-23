@@ -10,6 +10,16 @@ This repository includes source code and the built frontend, with no recordings,
 
 # 本地复听工作台 — 转写、复听与 MFA/TextGrid
 
+## 人工标签导出为 Google Sheet 格式
+
+在转写页勾选五项人工标签（自我纠正、静音、不流畅、错词／发音待核查、其他），并在备注填写具体问题，例如额、妈→马。点击“保存并导出 Sheet 标注”，自动保存当前勾选、备注和已编辑的转写，再下载 annotations_sheet.csv。无需逐条点击 Save。
+
+CSV 两列 participant / annotation，每位受试者一行，annotation 格内多行，例如 `001 - trial11 - 额 - disfluency`。同一 trial 多选标签用加号合并，静音追加数量汇总。受试者与 trial 编号优先按音频文件名提取，保留受试者前导零，不使用卡片排序号代替真实 trial。导出范围是当前项目，多受试者项目分别成行；同一受试者跨任务条件时，行内补充条件以免混淆。
+
+只输出人工勾选的标签，具体问题只取备注，不从 Whisper 猜测错音。未标注条目不输出，取消勾选后再次导出会移除该条。仅保存标签时不会把未转写的空白内容确认成修订 TXT，静音标注仍可确认空文本。勾选静音或其他不会删除录音。
+
+页面提供导出预览与同格式 TXT；“导出全部资料”也包含 annotations_sheet.csv 和 annotations.txt。CSV 导入 Google Sheets 后 annotation 格内的换行保留，原转写 TXT 不含这些标签和备注。
+
 波形导航新版：上方整段概览可拖动查看窗口，波形下方显示自适应秒数刻度及独立字词层。文字层与波形同步缩放／滚动；单击字词复听，拖动文字层边界可联动相邻区间并撤销。黄色表示选中字词，蓝色表示播放选区。“缩放到选区”显示选中范围，“显示全部”恢复整段。下方原有字词导航与快捷键保留。
 
 Colab Public 安装单元已增加 venv / pip 恢复：使用当前 Python 创建独立环境，缺少 pip 时依次尝试 ensurepip 和官方 get-pip；仅在 venv 创建失败时安装系统 python3-venv 支持。安装命令检查返回码，完整日志保存于 /content/speech_review_*.log。此恢复流程已通过模拟测试，实际 Colab 账号仍需运行验收。

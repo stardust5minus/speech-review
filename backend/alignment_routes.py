@@ -108,6 +108,8 @@ def everything(pid:str):
             if t['saved']:z.writestr('corrected_txt/'+t['txt_name'],t['corrected']+'\n')
         write_grids(z,p,'textgrids/')
         z.writestr('report.csv',exports.report(p))
+        z.writestr('annotations_sheet.csv',exports.annotation_csv(p))
+        z.writestr('annotations.txt',exports.annotation_text(p))
         z.writestr('alignment.csv',alignment_csv(p))
         z.writestr('export-info.json',json.dumps({'participant':p['participant'],'textgrid_note':'仅导出与当前修订文本及音频匹配的有效版本；auto 和 reviewed 分开保存'},ensure_ascii=False))
     return Response(out.getvalue(),media_type='application/zip',headers={'Content-Disposition':'attachment; filename="participant_export.zip"'})

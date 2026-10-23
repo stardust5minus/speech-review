@@ -16,8 +16,6 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8765
 ```
 
-Open http://127.0.0.1:8765/?lang=en in your browser. Stop the server with Ctrl+C. After installing dependencies, Windows users can also run `powershell -ExecutionPolicy Bypass -File .\start.ps1`. Open this folder in VS Code to use the included launch configuration.
-
 ## Transcription and review
 
 1. Import a local folder containing WAV recordings and optional matching TXT files. Original TXT files are references; they are not required. Local folder import reads files directly in that folder.

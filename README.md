@@ -1,50 +1,14 @@
 # Speech Review
 
-Whisper transcription, audio review, Montreal Forced Aligner alignment, and editable TextGrid boundaries in one workspace.
+Whisper transcription, audio review, Montreal Forced Aligner (MFA) alignment, and editable Praat TextGrid boundaries in one workspace.
 
-## Google Colab
+## Interface language
 
-Upload **SpeechReview_Colab_Public.ipynb** to Colab and run the cells in order. The Public URL opens the complete interface in a separate browser tab. Use the generated username and password. The URL expires when the runtime stops. See [Colab instructions](Colab-Public-使用说明.md).
+Choose **English** or **中文** in the page header. The preference is remembered on the current browser and origin. Switching languages does not reload the project or discard unsaved edits. Transcripts, interval labels, notes, and filenames stay in their original language.
 
-This repository includes source code and the built frontend, with no recordings, transcripts, saved reviews, model weights, or local environments. Dependencies and MFA models are downloaded separately. Colab deployment still needs validation in a real Colab session.
+## Run locally
 
-# 本地复听工作台 — 转写、复听与 MFA/TextGrid
-
-单击波形中两条边界之间，即选中字词并播放该区间，到右边界停止。播放选中字词按钮或空格可重播；点击位置仍作为编辑光标，Enter 增加边界不受影响。拖选任意播放范围与边界手柄拖动继续保留。
-
-## 人工标签导出为 Google Sheet 格式
-
-在转写页勾选五项人工标签（自我纠正、静音、不流畅、错词／发音待核查、其他），并在备注填写具体问题，例如额、妈→马。点击“保存并导出 Sheet 标注”，自动保存当前勾选、备注和已编辑的转写，再下载 annotations_sheet.csv。无需逐条点击 Save。
-
-CSV 两列 participant / annotation，每位受试者一行，annotation 格内多行，例如 `001 - trial11 - 额 - disfluency`。同一 trial 多选标签用加号合并，静音追加数量汇总。受试者与 trial 编号优先按音频文件名提取，保留受试者前导零，不使用卡片排序号代替真实 trial。导出范围是当前项目，多受试者项目分别成行；同一受试者跨任务条件时，行内补充条件以免混淆。
-
-只输出人工勾选的标签，具体问题只取备注，不从 Whisper 猜测错音。未标注条目不输出，取消勾选后再次导出会移除该条。仅保存标签时不会把未转写的空白内容确认成修订 TXT，静音标注仍可确认空文本。勾选静音或其他不会删除录音。
-
-页面提供导出预览与同格式 TXT；“导出全部资料”也包含 annotations_sheet.csv 和 annotations.txt。CSV 导入 Google Sheets 后 annotation 格内的换行保留，原转写 TXT 不含这些标签和备注。
-
-波形导航新版：上方整段概览可拖动查看窗口，波形下方显示自适应秒数刻度及独立字词层。文字层与波形同步缩放／滚动；单击字词复听，拖动文字层边界可联动相邻区间并撤销。黄色表示选中字词，蓝色表示播放选区。“缩放到选区”显示选中范围，“显示全部”恢复整段。下方原有字词导航与快捷键保留。
-
-Colab Public 安装单元已增加 venv / pip 恢复：使用当前 Python 创建独立环境，缺少 pip 时依次尝试 ensurepip 和官方 get-pip；仅在 venv 创建失败时安装系统 python3-venv 支持。安装命令检查返回码，完整日志保存于 /content/speech_review_*.log。此恢复流程已通过模拟测试，实际 Colab 账号仍需运行验收。
-
-## 导入已经生成的 WAV / TXT / TextGrid
-
-切换第二步“对齐与边界编辑”，点击“选择文件并一键导入”，同时选择同主名的 WAV、TXT 和 TextGrid；也可选择整个文件夹。支持多条录音，自动按主名配对。文件夹内不相关类型会忽略，不同目录有同名材料时请分批导入。
-
-识别 `主名.TextGrid`、`主名_reviewed.TextGrid` 和 `主名_auto.TextGrid`（按此顺序优先）。TextGrid 使用 words / word 层，也支持唯一的区间层；音频时长、边界范围和重叠必须通过校验。所有条目校验通过后才创建新项目。
-
-导入后的 TextGrid 作为 reviewed 人工版直接编辑，无需先跑 Whisper 或 MFA。修订 TXT 按 TextGrid 的文字预填并保存，原 TXT 与上传文件均保留作参考；文字不同时显示提示。不会覆盖正在使用的旧项目。普通话任务条件仍可在顶部选择或按文件名识别。
-
-上传副本在 `data/inputs/<导入ID>/`，修订和人工边界在独立项目目录。Colab 的 Drive 持久化设置同样适用。导入前保存当前未保存修改；文件较大时请分批导入。
-
-本地升级后需安装新增依赖：`.venv/Scripts/python.exe -m pip install -r requirements.txt`；Colab 从第 1 步重新运行会安装对应依赖。
-
-鼠标拖选复听：在波形主体按住鼠标左键拖动，松开后自动播放高亮范围，到选区末尾停止。支持跨字词、反向拖选和缩放。空格或播放选区按钮可重播；清除选区可恢复普通播放。选择播放范围不改动文字和人工边界，拖动边界手柄仍调整字词时间。
-
-界面按复听卡片排列：波形、播放／定位／缩放、Whisper 模型原文与候选诊断、折叠原 TXT、预填复听结论、Save、人工标签、备注、完成标记。
-
-## Windows 安装和启动
-
-需要 Python 3.11 或 3.12；Node.js 仅在重新构建前端时需要。解压整个文件夹，在该目录打开 PowerShell：
+Use Python 3.11 or 3.12. The built frontend is included; Node.js is needed only to rebuild it.
 
 ```powershell
 py -3.12 -m venv .venv
@@ -52,115 +16,68 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8765
 ```
 
-打开 http://127.0.0.1:8765 。关闭终端中的服务用 Ctrl+C。已附带构建好的 frontend/dist。
+Open http://127.0.0.1:8765/?lang=en in your browser. Stop the server with Ctrl+C. After installing dependencies, Windows users can also run `powershell -ExecutionPolicy Bypass -File .\start.ps1`. Open this folder in VS Code to use the included launch configuration.
 
-也可以在依赖安装完成后运行 `powershell -ExecutionPolicy Bypass -File .\start.ps1`。
+## Transcription and review
 
-## 使用
+1. Import a local folder containing WAV recordings and optional matching TXT files. Original TXT files are references; they are not required. Local folder import reads files directly in that folder.
+2. Select a task condition or let the app detect number, homo, or nonhomo from filenames.
+3. Run Whisper for all remaining recordings or an individual trial. Models download on first use. The original notebook profiles prefer GPU medium for Number/Homo and GPU large-v3 for Non-homo, with CPU medium/int8 fallback.
+4. Review the raw transcript, listen, edit the review text, and save. The original script's replacement and deduplication result is shown separately for optional adoption. Raw transcription is retained.
+5. Save all TXT files and export the saved results. Exported TXT names match the original filenames, or the audio stem when no original TXT exists. Tags and notes are stored separately from the transcript.
 
-1. 粘贴直接包含 WAV/TXT 的受试者文件夹完整路径，点击导入。支持大小写后缀；按文件主名匹配 TXT，保留原 TXT 文件名（包括大小写）。当前不递归子目录，避免同名文件冲突。
-2. 文件名中的 number/nonhomo/homo 自动判断条件；无法判断时可在导入前手动指定。不确定条件时不会套用词表异常规则。
-3. 单条或批量运行 Whisper。首次可能需要联网下载模型，音频不上传。按原 notebook：Number/Homo 优先 GPU medium/float16；Non-homo 优先 GPU large-v3/float16；不可用时回退 CPU medium/int8。需要 GPU 时安装兼容的 CUDA 环境。
-4. 第一次识别的文字按 token 空格分隔后预填复听结论；模型原文独立保存。修改或直接确认后点击 Save。勾选完成和修改标签后也需要 Save。
-5. 导出已保存 TXT ZIP，解压后 TXT 名字与原 TXT 一致。尚未保存的模型预填不纳入导出。标签、备注只进入本地元数据和 QC CSV。
+Saved human text and tags survive rerunning Whisper. Source recordings and original TXT files are read only.
 
-## 数据位置与恢复
+## Alignment and boundary editing
 
-源 WAV/TXT 只读取。应用目录中的 `data/<项目ID>/project.json` 保存参考文本快照、ASR、ASR 历史、人工修订历史、标签和备注；`corrected/` 存同名人工修订 TXT。请备份整个 data 目录。源 WAV 以原路径访问，移动后需要恢复原路径。可通过 SPEECH_REVIEW_DATA 环境变量指定独立数据目录（勿设置为源数据目录）。
-
-重新导入相同目录会打开原项目；关闭服务后数据保留。批量转写只处理尚无 ASR 的条目。重跑单条识别不覆盖已 Save 的人工文字和标签；前端阻止有未保存修改时切换项目、重跑该条或导出。
-
-## Notebook 复用说明（已按原代码恢复）
-
-`backend/notebook_code/number.py`、`homo.py`、`nonhomo.py` 分别从用户 notebook 第 9、18、19 单元（零起始索引）原样抽取常量和函数。未执行原 main()、安装命令或源文件写入代码。manifest.json 保存原 notebook SHA-256 和抽取符号清单。
-
-- Number：原数字任务提示词，language=zh、vad_filter=True，其他解码参数不额外指定，与原脚本一致。
-- Homo：原提示词，temperature=0、beam_size=5、best_of=5、condition_on_previous_text=False。
-- Non-homo：原提示词，beam_size=5、temperature=0、condition_on_previous_text=False。
-- 词表、映射、pypinyin 分类、原始 QC 判断均直接调用抽取函数。Number 原脚本遗漏 ALLOW_MISC 定义，采用 Homo 中已有定义补齐；Number 的宽泛自我纠正规则保留，并在 UI 明示可能误报正常数字序列。
-- GPU/CPU 模型选择按原脚本执行；无 CUDA 设备时直接进入原有 CPU 回退分支，避免无效下载。音频读取使用兼容 PyAV 的独立解码器，提供相同目标采样率的单声道样本给 faster-whisper。
-
-按用户确认：复听结论预填原始转写分词结果；Homo 映射、Non-homo 预处理／映射／去重结果只在“原脚本处理结果”中展示。点击“采用脚本结果到复听结论”才进入编辑框，仍需 Save。原始 ASR、脚本结果、人工文字分别保留。旧版通用流程结果会标为需重跑，历史保留。
-
-文字规则不能证明实际发音错误，空 ASR 不能证明静音；所有标记只供复听参考。原脚本的自动源 TXT 覆盖未接入。
-
-## MFA 强制对齐、人工边界和 TextGrid
-
-本机已准备独立 MFA 3.3.10 运行环境和 mandarin_mfa / mandarin_china_mfa 模型。分发 ZIP 不包含大型运行环境或研究数据；在另一台 Windows 电脑上可运行：
+Install the isolated MFA environment:
 
 ```powershell
 .\.venv\Scripts\python.exe install_mfa.py
 ```
 
-安装过程从官方 micromamba 与 conda-forge 下载约数百 MB 的包，仅写入项目 runtime/。不修改全局 Conda 或 PowerShell 配置。首次对齐自动下载普通话模型到 data/mfa_models/。已有 MFA 可设置 MFA_EXECUTABLE 为可执行文件；可通过 MFA_ROOT_DIR 指定模型目录。
+MFA 3.3.10 uses `mandarin_mfa` and `mandarin_china_mfa`; models download on the first alignment. Save corrected transcripts before running batch alignment. Automatic and manually reviewed boundaries are stored separately. Changing the transcript makes incompatible old alignments stale.
 
-使用顺序：
+In **Alignment and boundary editing**, select a recording, drag boundaries, enter precise times, or edit interval labels. Click a word or the waveform between boundaries to play that interval. Drag across the waveform to play an arbitrary selection. Use the overview, time ruler, and zoom controls to navigate.
 
-1. 复听修改转写，token 之间用空格分隔，点击 Save。空文本不做强制对齐。
-2. 单条点击“强制对齐已保存文本”，或顶部“一键对齐已保存条目”。批量跳过已有有效对齐的条目。输入只取人工 Save 的 corrected 字段，不取 Whisper 或原 TXT。
-3. 对齐完成后，上方波形显示字词区间。点击区间复听；拖动左右边界，或在时间表中输入开始、结束秒数。也可撤销／放弃未保存边界。
-4. 点击“保存人工边界”。自动版与人工版可切换，重跑 MFA 仅更新自动版。每版保留历史和独立 artifact。
-5. 下载单条或全部真实 Praat TextGrid；包含 words IntervalTier，完整音频边界与空白静音间隔。文件名为原主名加 _auto.TextGrid / _reviewed.TextGrid。
-6. 可在 Praat 进一步调整，保存后从卡片导入 TextGrid，支持长／短格式与 UTF-8/UTF-16。必须有一个 words 层，字词次序与已保存转写一致，时长与完整音频相符。
+Keyboard controls while the editor is active:
 
-修改转写文字或源音频后，原对齐显示过期。过期版本及历史仍保存，下载和批量导出仅纳入有效版本。出现 OOV、缺词、合词或 token 不一致会报错，不能通过均分时间、复制 Whisper 时间戳或静默删除填充词代替真实对齐。需先修正文本／MFA 词典后重试。
+- Space: play the selected range or interval.
+- Enter: insert a boundary at the time cursor; text can split at the input caret.
+- Alt+Backspace: remove the selected boundary and merge adjacent labels.
+- Ctrl+Z: undo boundary edits.
+- Ctrl+S: save reviewed boundaries.
 
-边界编辑校验禁止越界、零长度、倒序及重叠。自动边界仍需人工核查后用于声学研究。本版未实现频谱、音高曲线和直接控制 Praat。
+Save reviewed boundaries before exporting. **Export reviewed TextGrids** includes only human versions and uses the audio stem, for example `3nonhomo_069_trial9.TextGrid`. The complete export keeps automatic and reviewed versions distinct. TextGrids contain actual alignment intervals, including empty intervals.
 
-导出全部资料包含 corrected_txt/、textgrids/、report.csv、alignment.csv、export-info.json。alignment.csv 有 filename/version/word/start/end。报告备注不写入转写 TXT。
+## Import existing WAV, TXT, and TextGrid files
 
-日志与数据：data/<项目ID>/alignment_runs/<runID>/mfa.log 保存每次对齐日志；textgrids/versions/ 保存版本文件；project.json 保留 auto/reviewed 及 alignment_history；data/alignment_jobs/ 保存进度。服务重启后未完成任务标为中断，可重新提交。
+The alignment workspace supports batch file or folder upload. Match files by stem; accepted TextGrid names include `stem.TextGrid`, `stem_reviewed.TextGrid`, and `stem_auto.TextGrid`, in that preference order. A words/word tier or a single interval tier is supported. All files are validated before a new project is created.
 
-参考：[MFA 安装](https://montreal-forced-aligner.readthedocs.io/en/v3.3.2/installation.html)、[MFA 对齐](https://montreal-forced-aligner.readthedocs.io/en/v3.3.7/user_guide/workflows/alignment.html)、[micromamba 官方安装](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)。
+Imported TextGrids are ready for manual review without rerunning Whisper or MFA. Interval labels provide the reviewed transcript; the original TXT remains available as a reference. Uploaded copies are stored under `data/inputs/`.
 
-## 播放和 Whisper 更新
+## Annotation export for Google Sheets
 
-支持扩展名为 WAV、内部格式为 AIFF 的录音。网页播放副本存入 data/playback_cache，保留原采样率与时长，不修改原始文件。Whisper 使用应用独立解码得到 16 kHz 单声道浮点样本，避免新版 PyAV 移除 metadata_errors 参数引起的转写失败。
+In the transcription workspace, select **Self correction**, **Silence**, **Disfluency**, **Wrong word / pronunciation to check**, or **Other** and enter details in the notes. **Save and export Sheet annotations** saves the current tags, notes, and eligible transcript edits before downloading `annotations_sheet.csv`.
 
-“一键运行全部 Whisper”按顺序处理当前项目所有尚未转写的录音；失败条目仍可重试。顶部显示模型加载、当前文件、处理进度、耗时和错误详情。刷新恢复最近打开的项目及任务状态；服务重启会将旧任务标为中断，点击继续只处理未完成的录音。识别结果自动预填，仍需人工复听并 Save 后才导出。
+The CSV has `participant` and `annotation` columns: one participant per row, with multiple annotation lines inside a cell. Example: `001 - trial11 - filler - disfluency`. Multiple tags are combined, silence counts are summarized, and participant/trial IDs come from filenames. Only human-selected tags are exported. A matching TXT and preview are also available.
 
-## 开发及测试
+## Google Colab
+
+Upload **SpeechReview_Colab_Public.ipynb** to Colab and run its cells in order. Step 8 provides a temporary public URL and generated login credentials for the full interface, including on an iPad. The interface opens in English and can switch to Chinese. See [Colab instructions](COLAB.md).
+
+The notebook embeds the application, so it does not need access to this private repository at runtime. Dependencies install in a separate Python environment. Optional Drive storage persists inputs, reviews, and boundaries; otherwise save and export before the runtime ends. The public URL expires when the runtime stops. Existing Drive notebook copies do not update automatically when this repository changes: upload the new notebook or replace its setup cells and rerun setup.
+
+**SpeechReview_Colab.ipynb** is the alternate embedded-interface version; see [embedded notebook instructions](COLAB_EMBEDDED.md). Actual Colab execution depends on runtime resources and still needs verification in your account.
+
+## Data and development
+
+Project state, ASR history, reviews, tags, and boundary history are stored under `data/<project-id>/`; corrected text is in `corrected/`. Back up the entire data directory. Set `SPEECH_REVIEW_DATA` to choose another data directory. Source paths must remain accessible for locally imported recordings.
+
+The original notebook constants and functions live in `backend/notebook_code/`; its manifest records the source hash. Recordings, transcripts, reviews, model weights, credentials, and local environments are excluded from this repository.
 
 ```powershell
-cd frontend
-npm install
-npm run build
-cd ..
-.\.venv\Scripts\python.exe -m pip install httpx
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-测试覆盖源 TXT 保护、ASR 重跑保护、重复及填充词保留、重新导入恢复、未保存不导出、ZIP 同名与内容一致，以及浏览器跨源写入拦截。ASR 测试使用替身，真实模型需用研究录音另行验收。
-
-## 一键保存所有 TXT
-顶部按钮保存全部卡片当前的复听结论、标签和备注（包括未点击单条 Save 的编辑和筛选隐藏条目）。未转写且无文字的条目跳过；有模型结果或手工静音标签的空文本可保存。不会自动标记完成，也不会改动原 TXT。保存后仍需点击 MFA 对齐，等待生成后才能导出 TextGrid；没有有效对齐时会显示提示，不再下载空 ZIP。
-
-
-## 独立在线边界编辑工作区
-顶部‘对齐与边界编辑’标签集中显示单条录音、波形、已保存文本和边界表。可在新浏览器标签打开 /?view=alignment。选择录音或上一条／下一条读取已保存自动版／人工版，也可导入已有 TextGrid。共用边界联动、点击区间复听、数值编辑、撤销及保存人工版均保留。波形缩放支持最高约 64 倍。当前页面切换工作区／录音保留未保存边界，但新浏览器标签只读取已经保存到后台的版本。
-
-
-## 在 VS Code 运行
-在 VS Code 打开整个 speech-review 文件夹，选择项目 .venv 解释器。已提供 .vscode/launch.json：F5 启动本地工作台，Shift+F5 停止；输出在 Debug Console，支持 Python 断点调试。默认端口 8765，启动前关闭占用此端口的旧服务。‘Run project tests’任务可运行项目测试。
-
-
-## Google Colab 版本
-另有独立的 SpeechReview_Colab.ipynb，内置程序代码。上传到 Colab 后按步骤安装 Python、Linux MFA，选择上传录音 ZIP 或 Drive 文件夹，再以内嵌方式使用原工作台。完整 Web UI 适用于允许此用法且有可用额度的 Pro 等运行时；不创建公共隧道或自动保活。原 notebook 提示词和参数保持不变。临时文件和模型留在 Colab 磁盘，可选把输入与项目修订保存到自己的 Drive。内嵌版禁用新窗口链接，允许在浏览器存储不可用时继续选择项目。iPad 触控和 Colab 云端端到端执行仍需实机验收。
-
-
-
-## TextGrid 文字与边界编辑
-
-在“对齐与边界编辑”中，点击波形设置光标，或输入精确光标时间。选中区间可增加、修改或清空文字，空白区间也可加字。拖动内部边界或修改开始／结束时间；完整音频首尾固定。
-
-- Enter：在时间光标处增加边界。文字按文字输入框的光标位置拆分；默认原文留在左侧。
-- Alt/Option + Backspace：删除选中区间的左边界，合并相邻区间；文字拼接，相同文字仅保留一份，与 Praat 的合并规则一致。
-- Ctrl/Cmd + Z：撤销区间修改（文字输入框内保留原生文本撤销）。
-- Ctrl/Cmd + S：保存人工边界与文字。
-- Alt + 左／右：选择相邻区间；空格播放选中区间；单击下方区间条复听并选中。
-
-核心边界快捷键参照 [Praat TextGridEditor](https://www.fon.hum.uva.nl/praat/manual/TextGridEditor.html)。只在当前波形／编辑器聚焦时生效，不影响其他转写框。中文输入法组合期间不触发编辑快捷键。也可点击按钮，无需键盘。
-
-“保存人工边界”同时保存 TextGrid 文字和修订 TXT，保留旧文字历史与原始 Whisper。文字改变后旧自动版可能显示过期，人工版保持有效；无需先重跑 MFA。自动对齐仍严格校验字词顺序，人工版允许空白区间和合并后的标签。
-
-“一键导出人工 TextGrid”只打包已保存、有效的 reviewed 版本，不用自动版替代缺失的人工版。ZIP 内文件直接使用音频主名，例如 `3nonhomo_069_trial9.wav` → `3nonhomo_069_trial9.TextGrid`。原“导出全部 TextGrid”继续分开导出 auto/reviewed 文件。
+To rebuild the frontend, install dependencies from `frontend/package.json` with pnpm, then run `pnpm build` from `frontend/`.

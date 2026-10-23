@@ -256,5 +256,7 @@
   "导出说明": "Export help",
   "操作与快捷键": "Controls & shortcuts",
   "版本与导出说明": "Versions & export help",
-  "编辑说明": "Editing help"
+  "编辑说明": "Editing help",
+  "重新运行 MFA 并重置边界": "Re-run MFA & reset boundaries",
+  "使用已保存文本重新运行 MFA；成功后重置人工边界，旧版保留在历史中": "Re-run MFA using saved text. Reset boundaries only on success; the previous reviewed version stays in history."
 }

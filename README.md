@@ -97,3 +97,5 @@ The original notebook constants and functions live in `backend/notebook_code/`; 
 ```
 
 To rebuild the frontend, install dependencies from `frontend/package.json` with pnpm, then run `pnpm build` from `frontend/`.
+
+Per-trial **Re-run MFA & reset boundaries** uses the saved transcript and switches to fresh automatic boundaries after a successful run. The previous reviewed version is archived in project history; failed runs keep current boundaries. Save unsaved edits before resetting. The ordinary re-alignment action continues to preserve reviewed boundaries.

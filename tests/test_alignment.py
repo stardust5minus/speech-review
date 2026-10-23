@@ -60,6 +60,33 @@ class AlignmentFlow(unittest.TestCase):
         self.assertTrue(alignment.view(self.pid,'1')['reviewed']['stale'])
         self.assertEqual(self.client.get(f'/api/projects/{self.pid}/trials/1/textgrid?version=reviewed').status_code,400)
         self.assertEqual(self.client.get(f'/api/projects/{self.pid}/textgrids').status_code,400)
+    def test_reset_archives_reviewed_only_after_success(self):
+        base=self.auto();reviewed=self.review(base).json()['reviewed']
+        jid='reset-'+str(time.time_ns())
+        alignment.jobs[jid]={'project_id':self.pid,'started_at':time.time(),'status':'running','done':0,'total':1,'errors':[], 'reset_reviewed':True,'expected_reviewed_id':reviewed['id']}
+        with patch('backend.mfa_runtime.ensure_models'),patch('backend.mfa_runtime.run',side_effect=RuntimeError('MFA failed')):
+            alignment.run_job(jid,self.pid,['1'])
+        self.assertEqual(alignment.view(self.pid,'1')['reviewed']['id'],reviewed['id'])
+        alignment.jobs[jid].update(errors=[],done=0,status='running')
+        with patch('backend.mfa_runtime.ensure_models'),patch('backend.mfa_runtime.run',side_effect=self.fake_mfa):
+            alignment.run_job(jid,self.pid,['1'])
+        self.assertEqual(alignment.jobs[jid]['errors'],[])
+        result=alignment.view(self.pid,'1')
+        self.assertIsNone(result['reviewed'])
+        self.assertNotEqual(result['auto']['id'],base['id'])
+        trial=storage.trial(storage.read(self.pid),'1')
+        self.assertTrue(any(h['id']==reviewed['id'] and h.get('archived_reason')=='MFA reset' for h in trial['alignment_history']))
+
+    def test_reset_rejects_concurrent_manual_save(self):
+        base=self.auto();reviewed=self.review(base).json()['reviewed']
+        latest=self.review(base).json()['reviewed']
+        record=alignment.make_record(storage.trial(storage.read(self.pid),'1'),self.words,1,'MFA')
+        with self.assertRaises(ValueError):
+            alignment.save_version(self.pid,'1','auto',record,reset_reviewed=True,expected_reviewed_id=reviewed['id'])
+        result=alignment.view(self.pid,'1')
+        self.assertEqual(result['reviewed']['id'],latest['id'])
+        self.assertEqual(result['auto']['id'],base['id'])
+
     def test_invalid_edits_rejected_without_overwrite(self):
         base=self.auto()
         for start,end in [(-1,.2),(.3,.2),(.1,1.5),(.1,.45)]:

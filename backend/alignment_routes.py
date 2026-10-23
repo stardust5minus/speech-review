@@ -32,7 +32,7 @@ def status():
         'message':'MFA 已安装；首次对齐会自动准备普通话模型' if ready else '正在准备／尚未安装 MFA 环境，请查看 README 安装说明'}
 
 @router.post('/projects/{pid}/align')
-def start(pid:str,tid:str|None=None):return alignment.start(pid,tid)
+def start(pid:str,tid:str|None=None,reset_reviewed:bool=False):return alignment.start(pid,tid,reset_reviewed)
 
 @router.get('/projects/{pid}/alignment-job')
 def latest(pid:str):return alignment.latest_job(pid)

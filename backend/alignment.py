@@ -36,13 +36,17 @@ def view(pid,tid):
         result[version]={**record,'stale':not valid_for(record,t)} if record else None
     return result
 
-def save_version(pid,tid,version,record,base_id=None,previous_transcript=None):
+def save_version(pid,tid,version,record,base_id=None,previous_transcript=None,reset_reviewed=False,expected_reviewed_id=None):
     def apply(t):
         if t.get('corrected')!=(previous_transcript if previous_transcript is not None else record['transcript']) or fingerprint(t['audio_path'])!=record['audio_reference']:
             raise ValueError('转写或音频已改变，不能保存本次边界；请重新对齐')
         current=t.setdefault('alignments',{})
         if base_id and base_id not in [r['id'] for r in current.values() if r]:
             raise ValueError('对齐版本已经更新，请重新载入后编辑')
+        if reset_reviewed and (current.get('reviewed') or {}).get('id')!=expected_reviewed_id:
+            raise ValueError('Manual alignment changed during MFA; reload before resetting')
+        if reset_reviewed and current.get('reviewed'):
+            t.setdefault('alignment_history',[]).append({'version':'reviewed',**current.pop('reviewed'),'archived_reason':'MFA reset'})
         old=current.get(version)
         if old:t.setdefault('alignment_history',[]).append({'version':version,**old})
         current[version]=record
@@ -119,7 +123,7 @@ def run_job(jid,pid,tids):
                     record=make_record(t,intervals,audio_duration,'MFA mandarin_mfa / mandarin_china_mfa')
                     if reference!=record['audio_reference']:raise ValueError('对齐期间音频发生变化，请重新运行')
                     record['run_id']=run_dir.name
-                    save_version(pid,tid,'auto',record)
+                    save_version(pid,tid,'auto',record,reset_reviewed=j.get('reset_reviewed',False),expected_reviewed_id=j.get('expected_reviewed_id'))
                 except Exception as exc:
                     j['errors'].append({'trial':tid,'message':str(exc)})
                 j['done']+=1;persist(jid)
@@ -129,7 +133,8 @@ def run_job(jid,pid,tids):
         j.update(status='finished',stage='finished',message='MFA 对齐任务结束' if not j['errors'] else 'MFA 对齐有失败项，请查看详情',ended_at=time.time())
         persist(jid)
 
-def start(pid,tid=None):
+def start(pid,tid=None,reset_reviewed=False):
+    if reset_reviewed and not tid:raise ValueError("Reset requires a single trial")
     p=storage.read(pid)
     candidates=[storage.trial(p,tid)] if tid else p['trials']
     tids=[t['id'] for t in candidates if t.get('saved') and t.get('corrected','').strip() and (tid or not any(valid_for(r,t) for r in t.get('alignments',{}).values()))]
@@ -138,10 +143,11 @@ def start(pid,tid=None):
     with LOCK:
         active=next((i for i,j in jobs.items() if j['status']=='running'),None)
         if active:
-            if jobs[active]['project_id']==pid:return job_view(active)
+            if jobs[active]['project_id']==pid and not reset_reviewed:return job_view(active)
             raise ValueError('另一项目正在执行 MFA 对齐，请稍后再试')
         jid=uuid.uuid4().hex
         jobs[jid]={'project_id':pid,'status':'running','stage':'queued','message':'MFA 任务已提交','started_at':time.time(),'done':0,'total':len(tids),'errors':[]}
+        jobs[jid].update(reset_reviewed=reset_reviewed,expected_reviewed_id=(candidates[0].get('alignments',{}).get('reviewed') or {}).get('id') if reset_reviewed else None)
         persist(jid);pool.submit(run_job,jid,pid,tids)
     return job_view(jid)
 

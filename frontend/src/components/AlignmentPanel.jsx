@@ -25,9 +25,9 @@ export default function AlignmentPanel({ pid, saved, startRef, onBusy, onRefresh
         setError(e.message);
         setJob(null);
     } }, 1500); return () => clearInterval(timer); }, [job?.id, job?.status]);
-    async function start(tid) { if (!latest.current.beforeStart())
+    async function start(tid, reset = false) { if (!latest.current.beforeStart())
         return; setError(''); setStarting(true); try {
-        setJob(await api(`/projects/${pid}/align${tid ? '?tid=' + tid : ''}`, 'POST'));
+        setJob(await api(`/projects/${pid}/align${tid ? '?tid=' + encodeURIComponent(tid) + (reset ? '&reset_reviewed=true' : '') : ''}`, 'POST'));
     }
     catch (e) {
         setError(e.message);

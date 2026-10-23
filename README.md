@@ -2,13 +2,22 @@
 
 Whisper transcription, audio review, Montreal Forced Aligner (MFA) alignment, and editable Praat TextGrid boundaries in one workspace.
 
+## Windows downloads
+
+| Download | How to start | Status |
+| --- | --- | --- |
+| [Workbench folder ZIP](https://github.com/stardust5minus/speech-review/releases/download/v0.1.0/SpeechReview-Workbench-Windows.zip) | Extract the whole folder, install Python 3.11/3.12 (64-bit), then double-click **run.bat**. First launch installs the libraries automatically. | Python source + startup scripts |
+| [Windows EXE](https://github.com/stardust5minus/speech-review/releases/download/v0.1.0/SpeechReview-Windows-x64.exe) | Double-click the EXE. Python is included. | **EXPERIMENTAL — CURRENTLY IN TESTING** |
+
+Both editions include the complete bilingual workspace. First-time model downloads and MFA installation require internet access. See [folder setup instructions](START-HERE.md) or [EXE instructions](desktop/README.md). The EXE has passed local checks but is still being tested on other computers.
+
 ## Interface language
 
 Choose **English** or **中文** in the page header. The preference is remembered on the current browser and origin. Switching languages does not reload the project or discard unsaved edits. Transcripts, interval labels, notes, and filenames stay in their original language.
 
 ## Windows app
 
-[Download the Windows x64 preview](https://github.com/stardust5minus/speech-review/releases/download/v0.1.0/SpeechReview-Windows-x64.exe)
+[Download the Windows x64 EXE — EXPERIMENTAL / TESTING](https://github.com/stardust5minus/speech-review/releases/download/v0.1.0/SpeechReview-Windows-x64.exe)
 
 Double-click the EXE to open the workspace in your browser. Python is included. Use **Install MFA (first use)** in the launcher for alignment; Whisper and Mandarin models download when first needed. Keep the launcher open while working and save before closing it. Data persists under `%LOCALAPPDATA%\SpeechReview`, separate from the EXE and from source-code installations. See [Windows instructions](desktop/README.md). This is an unsigned preview; GPU execution and first-time MFA installation need validation on each target setup.
 

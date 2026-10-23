@@ -1,6 +1,9 @@
 # Research materials and local state
 data/
 runtime/
+models/
+logs/
+desktop-session.json
 work/
 *.wav
 *.WAV

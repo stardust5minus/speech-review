@@ -141,7 +141,7 @@ cd ..
 - Alt/Option + Backspace：删除选中区间的左边界，合并相邻区间；文字拼接，相同文字仅保留一份，与 Praat 的合并规则一致。
 - Ctrl/Cmd + Z：撤销区间修改（文字输入框内保留原生文本撤销）。
 - Ctrl/Cmd + S：保存人工边界与文字。
-- Alt + 左／右：选择相邻区间；空格播放选中区间；双击下方区间条复听。
+- Alt + 左／右：选择相邻区间；空格播放选中区间；单击下方区间条复听并选中。
 
 核心边界快捷键参照 [Praat TextGridEditor](https://www.fon.hum.uva.nl/praat/manual/TextGridEditor.html)。只在当前波形／编辑器聚焦时生效，不影响其他转写框。中文输入法组合期间不触发编辑快捷键。也可点击按钮，无需键盘。
 

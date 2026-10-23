@@ -60,6 +60,7 @@ Keyboard controls while the editor is active:
 - Delete or Backspace (Alt+Backspace is also supported): remove the selected boundary and merge adjacent labels.
 - Ctrl+Z: undo boundary edits.
 - Ctrl+S: save reviewed boundaries.
+- Ctrl+Enter (Cmd+Enter on Mac): save reviewed boundaries and advance to the next recording in the alignment workspace. The Save & next button does the same. Failed saves stay on the current recording; the final recording remains open with confirmation.
 
 Save reviewed boundaries before exporting. **Export reviewed TextGrids** includes only human versions and uses the audio stem, for example `3nonhomo_069_trial9.TextGrid`. The complete export keeps automatic and reviewed versions distinct. TextGrids contain actual alignment intervals, including empty intervals.
 

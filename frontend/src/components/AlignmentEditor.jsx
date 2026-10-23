@@ -2,10 +2,11 @@ import {useLanguage} from '../i18n';
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { fullTier, splitInterval, removeLeftBoundary } from '../alignmentEditing';
-export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, onStart, onOverlay, onDirty, onChanged, play }) {
+export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, onStart, onOverlay, onDirty, onChanged, onNext, play }) {
     const { tr } = useLanguage();
     const [records, setRecords] = useState({ auto: null, reviewed: null }), [version, setVersion] = useState('auto'), [base, setBase] = useState(null), [draft, setDraft] = useState([]), [undo, setUndo] = useState([]), [message, setMessage] = useState(''), [saving, setSaving] = useState(false);
     const [selected, setSelected] = useState(0), [cursor, setCursor] = useState(0);
+    const saveLock = useRef(false);
     const labelInput = useRef(), labelCaret = useRef(null), commands = useRef();
     const dirty = !!base && JSON.stringify(draft) !== JSON.stringify(fullTier(base.intervals, base.duration)), dirtyRef = useRef(false);
     dirtyRef.current = dirty;
@@ -32,7 +33,7 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
     function editBoundary(index, field, value) { const changed = draft.map(i => ({ ...i })), old = draft[index]; changed[index][field] = value; if (field === 'start' && index > 0 && Math.abs(draft[index - 1].end - old.start) < 1e-6)
         changed[index - 1].end = value; if (field === 'end' && index + 1 < draft.length && Math.abs(draft[index + 1].start - old.end) < 1e-6)
         changed[index + 1].start = value; changeRef.current(changed); }
-    async function save() { setSaving(true); setMessage(''); try {
+    async function save(advance = false) { if (saveLock.current || !canEdit) return; saveLock.current = true; setSaving(true); setMessage(''); try {
         if (draft.some((i, k) => !Number.isFinite(i.start) || !Number.isFinite(i.end) || i.start < 0 || i.end > base.duration || i.end <= i.start || (k && i.start < draft[k - 1].end)))
             throw Error(tr("\u8FB9\u754C\u5FC5\u987B\u5728\u97F3\u9891\u8303\u56F4\u5185\uFF0C\u5F00\u59CB\u5C0F\u4E8E\u7ED3\u675F\uFF0C\u4E14\u4E0D\u80FD\u91CD\u53E0"));
         const data = await api(`/projects/${pid}/trials/${t.id}/alignment`, 'PUT', { intervals: draft, transcript: base.transcript, base_id: base.id, update_transcript: true });
@@ -42,12 +43,14 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
         setDraft(fullTier(data.reviewed.intervals, data.reviewed.duration));
         setUndo([]);
         setMessage(tr("\u4EBA\u5DE5\u8FB9\u754C\u4E0E\u6587\u5B57\u5DF2\u4FDD\u5B58\uFF0CTXT \u5DF2\u540C\u6B65"));
-        onChanged?.();
+        await onChanged?.();
+        if (advance === true && onNext && await onNext() === false) setMessage(tr("已保存，这是最后一条录音。"));
     }
     catch (e) {
         setMessage(e.message);
     }
     finally {
+        saveLock.current = false;
         setSaving(false);
     } }
     async function importFile(file) { if (!file)
@@ -97,6 +100,7 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
         if (e.nativeEvent?.isComposing || e.isComposing || !canEdit || saving)
             return;
         const typing = e.target.matches('input,textarea,[contenteditable="true"]');
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && onNext) { e.preventDefault(); if (!e.repeat) save(true); return; }
         if (['Delete', 'Backspace'].includes(e.key) && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
             e.preventDefault();
             remove();
@@ -149,7 +153,7 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
  <p className="hint">{tr("\u5220\u9664\u8FB9\u754C\u4F1A\u5408\u5E76\u4E24\u4FA7\u6587\u5B57\uFF1BEnter \u6309\u6587\u5B57\u8F93\u5165\u6846\u4E2D\u7684\u5149\u6807\u4F4D\u7F6E\u62C6\u5206\u6587\u5B57\u3002\u5728\u6CE2\u5F62\u70B9\u51FB\u8BBE\u7F6E\u65F6\u95F4\u5149\u6807\uFF0C\u518D\u6309 Enter\u3002\u9996\u5C3E\u97F3\u9891\u8FB9\u754C\u56FA\u5B9A\u3002")}</p>
  <div className="word-strip" aria-label={tr("\u5B57\u8BCD\u533A\u95F4")}>{draft.map((i, k) => <button key={k} title={tr("\u5355\u51FB\u590D\u542C {0}\u2013{1} \u79D2", [i.start.toFixed(3), i.end.toFixed(3)])} style={{ left: `${i.start / base.duration * 100}%`, width: `${(i.end - i.start) / base.duration * 100}%` }} className={selected === k ? 'selected' : ''} onClick={() => { select(k, i.start); play(i.start, i.end); }}>{i.text || tr("\uFF08\u7A7A\uFF09")}</button>)}</div>
  <div className="boundary-scroll"><table className="boundaries"><thead><tr><th>{tr("\u5B57\u8BCD")}</th><th>{tr("\u5F00\u59CB\uFF08\u79D2\uFF09")}</th><th>{tr("\u7ED3\u675F\uFF08\u79D2\uFF09")}</th><th>{tr("\u590D\u542C")}</th></tr></thead><tbody>{draft.map((i, k) => <tr key={k} className={selected === k ? 'selected' : ''}><td><button aria-label={tr("\u9009\u62E9\u533A\u95F4 {0}", [k + 1])} onClick={() => select(k, i.start)}>{i.text || tr("\uFF08\u7A7A\uFF09")}</button></td>{['start', 'end'].map(field => <td key={field}><input aria-label={`${k + 1} ${field}`} type="number" step="0.001" min="0" max={base.duration} value={i[field]} disabled={!canEdit || (k === 0 && field === 'start') || (k === draft.length - 1 && field === 'end')} onChange={e => editBoundary(k, field, Number(e.target.value))}/></td>)}<td><button onClick={() => play(i.start, i.end)}>▶</button></td></tr>)}</tbody></table></div>
- <div className="alignment-actions"><button className="primary" disabled={!canEdit || saving} onClick={save}>{saving ? tr("\u4FDD\u5B58\u4E2D\u2026") : tr("\u4FDD\u5B58\u4EBA\u5DE5\u8FB9\u754C")}</button><button disabled={!undo.length || !canEdit} onClick={undoEdit}>{tr("\u64A4\u9500\u4FEE\u6539")}</button><button disabled={!dirty} onClick={() => { setDraft(fullTier(base.intervals, base.duration)); setUndo([]); setMessage(''); }}>{tr("\u653E\u5F03\u672A\u4FDD\u5B58\u8FB9\u754C")}</button><small>{tr("\u81EA\u52A8\u4E0E\u4EBA\u5DE5\u7248\u672C\u72EC\u7ACB\u4FDD\u5B58\uFF0C\u91CD\u65B0\u5BF9\u9F50\u4E0D\u4F1A\u8986\u76D6\u4EBA\u5DE5\u7248\u3002")}</small></div></> : <p className="hint">{tr("\u5C1A\u65E0\u5BF9\u9F50\u7ED3\u679C\u3002\u751F\u6210\u540E\u53EF\u76F4\u63A5\u5728\u6CE2\u5F62\u4E0A\u8C03\u6574\u8FB9\u754C\uFF0C\u4E5F\u53EF\u5BFC\u5165 Praat \u7684 words \u5C42\u3002")}</p>}
+ <div className="alignment-actions"><button className="primary" disabled={!canEdit || saving} onClick={save}>{saving ? tr("\u4FDD\u5B58\u4E2D\u2026") : tr("\u4FDD\u5B58\u4EBA\u5DE5\u8FB9\u754C")}</button>{onNext && <button className="primary save-next" disabled={!canEdit || saving} onClick={() => save(true)} title={tr("保存并下一条（Ctrl / Cmd + Enter）")}>{saving ? tr("保存中…") : tr("保存并下一条")}</button>}<button disabled={!undo.length || !canEdit} onClick={undoEdit}>{tr("\u64A4\u9500\u4FEE\u6539")}</button><button disabled={!dirty} onClick={() => { setDraft(fullTier(base.intervals, base.duration)); setUndo([]); setMessage(''); }}>{tr("\u653E\u5F03\u672A\u4FDD\u5B58\u8FB9\u754C")}</button><small>{tr("\u81EA\u52A8\u4E0E\u4EBA\u5DE5\u7248\u672C\u72EC\u7ACB\u4FDD\u5B58\uFF0C\u91CD\u65B0\u5BF9\u9F50\u4E0D\u4F1A\u8986\u76D6\u4EBA\u5DE5\u7248\u3002")}</small></div></> : <p className="hint">{tr("\u5C1A\u65E0\u5BF9\u9F50\u7ED3\u679C\u3002\u751F\u6210\u540E\u53EF\u76F4\u63A5\u5728\u6CE2\u5F62\u4E0A\u8C03\u6574\u8FB9\u754C\uFF0C\u4E5F\u53EF\u5BFC\u5165 Praat \u7684 words \u5C42\u3002")}</p>}
  {message && <p role="status" className="alignment-message">{tr(message)}</p>}
  </section>;
 }

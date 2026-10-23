@@ -249,5 +249,8 @@
   "单击下方区间条复听并选中；在上方波形拖动边界或输入精确时间，相邻共用边界会联动。选中区间后可直接修改文字；保存时同步修订 TXT。Enter 增加边界，Delete / Alt/Option + Backspace 删除所选区间左边界，Ctrl/Cmd + Z 撤销，Ctrl/Cmd + S 保存。": "Click an interval to select and listen. Drag waveform boundaries or enter precise times; shared edges move together. Edit selected text directly; saving synchronizes reviewed TXT. Enter: insert boundary. Delete / Alt/Option + Backspace: remove left boundary. Ctrl/Cmd + Z: undo. Ctrl/Cmd + S: save.",
   "请选择内部边界；音频起止边界不能删除。": "Select an internal boundary. Audio endpoints cannot be deleted.",
   "删除左边界（Delete / Backspace）": "Remove left boundary (Delete / Backspace)",
-  "单击下方区间条复听并选中；在上方波形拖动边界或输入精确时间，相邻共用边界会联动。选中区间后可直接修改文字；保存时同步修订 TXT。Enter 增加边界，Delete / Backspace 删除所选区间左边界，Ctrl/Cmd + Z 撤销，Ctrl/Cmd + S 保存。": "Click an interval to select and listen. Drag waveform boundaries or enter precise times; shared edges move together. Edit selected text directly; saving synchronizes reviewed TXT. Enter: insert boundary. Delete / Backspace: remove left boundary. Ctrl/Cmd + Z: undo. Ctrl/Cmd + S: save."
+  "单击下方区间条复听并选中；在上方波形拖动边界或输入精确时间，相邻共用边界会联动。选中区间后可直接修改文字；保存时同步修订 TXT。Enter 增加边界，Delete / Backspace 删除所选区间左边界，Ctrl/Cmd + Z 撤销，Ctrl/Cmd + S 保存。": "Click an interval to select and listen. Drag waveform boundaries or enter precise times; shared edges move together. Edit selected text directly; saving synchronizes reviewed TXT. Enter: insert boundary. Delete / Backspace: remove left boundary. Ctrl/Cmd + Z: undo. Ctrl/Cmd + S: save.",
+  "保存并下一条": "Save & next",
+  "保存并下一条（Ctrl / Cmd + Enter）": "Save & next (Ctrl / Cmd + Enter)",
+  "已保存，这是最后一条录音。": "Saved. This is the last recording."
 }

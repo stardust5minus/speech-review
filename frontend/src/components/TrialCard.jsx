@@ -4,7 +4,7 @@ import Waveform from './Waveform';
 import { api } from '../api';
 import AlignmentEditor from './AlignmentEditor';
 export const LABELS = { self_correction: '自我纠正', silent: '静音', disfluency: '不流畅', wrong_word: '错词／发音待核查', other: '其他' };
-export default function TrialCard({ trial: t, pid, onSaved, onTranscribe, busy, active, onDirty, alignBusy, onAlign, onRefresh, register, alignmentOnly = false, playerVisible = true }) {
+export default function TrialCard({ trial: t, pid, onSaved, onTranscribe, busy, active, onDirty, alignBusy, onAlign, onRefresh, onNextAlignment, register, alignmentOnly = false, playerVisible = true }) {
     const { tr } = useLanguage();
     const player = useRef();
     const [overlay, setOverlay] = useState({ intervals: [], editable: false });
@@ -58,6 +58,6 @@ export default function TrialCard({ trial: t, pid, onSaved, onTranscribe, busy, 
  <p className="hint">{tr("\u4EBA\u5DE5\u6807\u6CE8\uFF08\u53EF\u591A\u9009\uFF09\uFF1A\u5177\u4F53\u95EE\u9898\u5199\u5728\u4E0B\u65B9\u5907\u6CE8\uFF0C\u9876\u90E8\u53EF\u4E00\u952E\u5BFC\u51FA Sheet \u683C\u5F0F\u3002")}</p><div className="manual">{Object.entries(LABELS).map(([key, label]) => <label key={key}><input type="checkbox" checked={labels.includes(key)} onChange={e => change(() => setLabels(e.target.checked ? [...labels, key] : labels.filter(x => x !== key)))}/>{tr(label)}</label>)}</div>
  <div className="bottom"><input className="notes" aria-label={tr("\u5907\u6CE8")} placeholder={tr("\u6807\u6CE8\u8BE6\u60C5\uFF0F\u5907\u6CE8\uFF1A\u4F8B\u5982 \u989D\u3001\u5988\u2192\u9A6C\u3001\u8BFE\u53D1\u6210\u4E8C\u58F0\uFF08\u7528\u4E8E\u6807\u6CE8\u5BFC\u51FA\uFF0C\u4E0D\u5199\u5165\u8F6C\u5199 TXT\uFF09")} value={notes} onChange={e => change(() => setNotes(e.target.value))}/><label><input type="checkbox" checked={complete} onChange={e => change(() => setComplete(e.target.checked))}/>{tr("\u6807\u8BB0\u5B8C\u6210")}</label><span role="status" className={dirty ? 'unsaved' : 'saved'}>{dirty ? tr("\u6709\u672A\u4FDD\u5B58\u4FEE\u6539") : tr(message) || (t.saved ? tr("\u5DF2\u4FDD\u5B58") : tr("\u5C1A\u672A\u4FDD\u5B58"))}</span></div>
  </div>
- <AlignmentEditor trial={t} pid={pid} disabled={busy || dirty} alignBusy={alignBusy} onStart={onAlign} onOverlay={setOverlay} onDirty={value => onDirty('alignment-' + t.id, value)} onChanged={onRefresh} play={(start, end) => player.current?.play(start, end)}/>
+ <AlignmentEditor trial={t} pid={pid} disabled={busy || dirty} alignBusy={alignBusy} onStart={onAlign} onOverlay={setOverlay} onDirty={value => onDirty('alignment-' + t.id, value)} onChanged={onRefresh} onNext={alignmentOnly ? () => onNextAlignment(t.id) : undefined} play={(start, end) => player.current?.play(start, end)}/>
  </article>;
 }

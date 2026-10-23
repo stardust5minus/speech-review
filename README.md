@@ -10,6 +10,8 @@ This repository includes source code and the built frontend, with no recordings,
 
 # 本地复听工作台 — 转写、复听与 MFA/TextGrid
 
+单击波形中两条边界之间，即选中字词并播放该区间，到右边界停止。播放选中字词按钮或空格可重播；点击位置仍作为编辑光标，Enter 增加边界不受影响。拖选任意播放范围与边界手柄拖动继续保留。
+
 ## 人工标签导出为 Google Sheet 格式
 
 在转写页勾选五项人工标签（自我纠正、静音、不流畅、错词／发音待核查、其他），并在备注填写具体问题，例如额、妈→马。点击“保存并导出 Sheet 标注”，自动保存当前勾选、备注和已编辑的转写，再下载 annotations_sheet.csv。无需逐条点击 Save。

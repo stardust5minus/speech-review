@@ -15,3 +15,19 @@ export function removeLeftBoundary(intervals,index){
  const text=left.text===right.text?left.text:left.text+right.text;
  return {index:index-1,intervals:[...intervals.slice(0,index-1),{start:left.start,end:right.end,text},...intervals.slice(index+1)]};
 }
+
+export function moveTierBoundary(intervals,index,time){
+ if(index<=0||index>=intervals.length)throw Error('音频首尾边界固定。');
+ const left=intervals[index-1],right=intervals[index],shared=Math.abs(left.end-right.start)<1e-6;
+ if(!Number.isFinite(time))throw Error('无效边界时间。');
+ const minimum=shared?left.start+.001:left.end,maximum=right.end-.001;
+ if(minimum>=maximum)return intervals.map(i=>({...i}));
+ const value=Math.max(minimum,Math.min(maximum,time));
+ return intervals.map((i,k)=>k===index?{...i,start:value}:shared&&k===index-1?{...i,end:value}:i);
+}
+export function visibleTicks(start,end,width){
+ const desired=(end-start)*72/Math.max(width,1),scale=Math.pow(10,Math.floor(Math.log10(Math.max(desired,.0001))));
+ const step=([1,2,5,10].find(n=>n*scale>=desired)||10)*scale,ticks=[];
+ for(let t=Math.ceil((start-1e-8)/step)*step;t<=end+1e-8&&ticks.length<200;t+=step){const time=Number(t.toFixed(6));ticks.push({time,position:(time-start)/(end-start)*100,label:time.toFixed(Math.max(0,Math.min(4,-Math.floor(Math.log10(step)))))});}
+ return ticks;
+}

@@ -10,6 +10,10 @@ This repository includes source code and the built frontend, with no recordings,
 
 # 本地复听工作台 — 转写、复听与 MFA/TextGrid
 
+波形导航新版：上方整段概览可拖动查看窗口，波形下方显示自适应秒数刻度及独立字词层。文字层与波形同步缩放／滚动；单击字词复听，拖动文字层边界可联动相邻区间并撤销。黄色表示选中字词，蓝色表示播放选区。“缩放到选区”显示选中范围，“显示全部”恢复整段。下方原有字词导航与快捷键保留。
+
+Colab Public 安装单元已增加 venv / pip 恢复：使用当前 Python 创建独立环境，缺少 pip 时依次尝试 ensurepip 和官方 get-pip；仅在 venv 创建失败时安装系统 python3-venv 支持。安装命令检查返回码，完整日志保存于 /content/speech_review_*.log。此恢复流程已通过模拟测试，实际 Colab 账号仍需运行验收。
+
 ## 导入已经生成的 WAV / TXT / TextGrid
 
 切换第二步“对齐与边界编辑”，点击“选择文件并一键导入”，同时选择同主名的 WAV、TXT 和 TextGrid；也可选择整个文件夹。支持多条录音，自动按主名配对。文件夹内不相关类型会忽略，不同目录有同名材料时请分批导入。

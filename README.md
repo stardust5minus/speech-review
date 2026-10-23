@@ -51,7 +51,7 @@ Install the isolated MFA environment:
 
 MFA 3.3.10 uses `mandarin_mfa` and `mandarin_china_mfa`; models download on the first alignment. Save corrected transcripts before running batch alignment. Automatic and manually reviewed boundaries are stored separately. Changing the transcript makes incompatible old alignments stale.
 
-In **Alignment and boundary editing**, select a recording, drag boundaries, enter precise times, or edit interval labels. Click a word or the waveform between boundaries to play that interval. Drag across the waveform to play an arbitrary selection. Use the overview, time ruler, and zoom controls to navigate.
+In **Alignment and boundary editing**, select a recording, drag boundaries, enter precise times, or edit interval labels. Click a word or the waveform between boundaries to play that interval. Drag across the waveform to play an arbitrary selection. Use the overview, time ruler, and zoom controls to navigate. The red vertical bar follows playback and stays at the paused position; Enter inserts a boundary at that exact point. Shift + click positions the cursor without playing. Space in the waveform plays or pauses.
 
 Keyboard controls while the editor is active:
 

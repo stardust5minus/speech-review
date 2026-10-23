@@ -242,5 +242,6 @@
   "正在读取音频": "Reading audio",
   "Whisper 正在识别，CPU 模式需要一些时间": "Whisper is transcribing. CPU mode may take some time.",
   "Whisper 正在识别": "Whisper is transcribing",
-  "）": ")"
+  "）": ")",
+  "红色竖线是播放／编辑光标；暂停后停在当前位置，Enter 增加边界。Shift + 单击只定位、不播放；空格播放／暂停。": "The red bar is the playback / edit cursor. Pause to keep it in place; Enter inserts a boundary there. Shift + click positions it without playback. Space plays / pauses."
 }

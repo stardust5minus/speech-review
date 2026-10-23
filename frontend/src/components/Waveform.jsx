@@ -3,10 +3,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import Regions from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import WaveNavigation from './WaveNavigation';
-export default function Waveform({ url, intervals = [], editable = false, onIntervalsChange, onReady, onCursorChange, onSelectInterval, onKeyDown, selectedIndex, height = 88, visible = true }) {
+export default function Waveform({ url, intervals = [], editable = false, onIntervalsChange, onReady, onCursorChange, onPlaybackPause, editCursor, onSelectInterval, onKeyDown, selectedIndex, height = 88, visible = true }) {
     const { tr } = useLanguage();
     const regions = useRef(), latest = useRef();
-    latest.current = { intervals, onIntervalsChange, onReady, onCursorChange, onSelectInterval, editable };
+    latest.current = { intervals, onIntervalsChange, onReady, onCursorChange, onPlaybackPause, onSelectInterval, editable };
     const [boundaryTime, setBoundaryTime] = useState(null);
     const [selection, setSelection] = useState(null), selectionRef = useRef(null), selectionRegion = useRef(null), renderSelection = useRef(() => { });
     const container = useRef(), wave = useRef();
@@ -22,17 +22,18 @@ export default function Waveform({ url, intervals = [], editable = false, onInte
         setSelection(null);
         selectionRef.current = null;
         selectionRegion.current = null;
-        const ws = WaveSurfer.create({ container: container.current, height, waveColor: '#537f88', progressColor: '#183f48', cursorColor: '#d0a34b', normalize: true, interact: true });
+        const ws = WaveSurfer.create({ container: container.current, height, waveColor: '#537f88', progressColor: '#183f48', cursorColor: '#dc3545', cursorWidth: 2, normalize: true, interact: true });
         wave.current = ws;
         const plugin = ws.registerPlugin(Regions.create());
         regions.current = plugin;
         // Listen in capture phase so a drag can cross existing word regions. Boundary
         // handles retain their normal resize gesture; selection never edits labels.
         const wrapper = ws.getWrapper();
-        let drag = null, suppressClickUntil = 0;
+        let drag = null, suppressClickUntil = 0, playbackActive = false;
         const style = document.createElement('style');
         style.textContent = '[part~="region"]{border-left:1px solid #79959b;border-right:0!important;box-sizing:border-box}[part~="region-handle"]{width:6px!important;opacity:.6;border-color:#79959b!important}[part~="region-handle"]:hover{opacity:1;background:rgba(38,112,141,.2)}';
         wrapper.getRootNode().appendChild(style);
+        style.textContent += '[part="cursor"]{z-index:30!important;pointer-events:none!important;box-shadow:0 0 0 1px #fff9}';
         const timeAt = event => { const rect = wrapper.getBoundingClientRect(); return Math.max(0, Math.min(ws.getDuration(), (event.clientX - rect.left) / rect.width * ws.getDuration())); };
         renderSelection.current = () => { const range = selectionRef.current; if (!range)
             return; if (selectionRegion.current && !selectionRegion.current.isRemoved)
@@ -70,7 +71,7 @@ export default function Waveform({ url, intervals = [], editable = false, onInte
         wrapper.addEventListener('pointercancel', cancel, true);
         wrapper.addEventListener('click', click, true);
         plugin.on('region-clicked', (region, event) => { event.stopPropagation(); if (!region.id.startsWith('w'))
-            return; const rect = region.element.getBoundingClientRect(); const time = region.start + Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * (region.end - region.start); latest.current.onSelectInterval?.(Number(region.id.slice(1)), time); container.current.closest('.wave')?.focus(); ws.play(region.start, region.end).catch(e => { if (alive)
+            return; const rect = region.element.getBoundingClientRect(); const time = region.start + Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * (region.end - region.start); latest.current.onSelectInterval?.(Number(region.id.slice(1)), time); container.current.closest('.wave')?.focus(); if (event.shiftKey) { ws.pause(); ws.setTime(time); latest.current.onCursorChange?.(time); return; } ws.play(region.start, region.end).catch(e => { if (alive)
             setError(e.message); }); });
         plugin.on('region-update', (region, side) => { if (region.id.startsWith('w') && side)
             setBoundaryTime(region[side]); });
@@ -86,8 +87,8 @@ export default function Waveform({ url, intervals = [], editable = false, onInte
             latest.current.onReady?.(ws);
         } });
         ws.on('timeupdate', setTime);
-        ws.on('play', () => setPlaying(true));
-        ws.on('pause', () => setPlaying(false));
+        ws.on('play', () => { playbackActive = true; setPlaying(true); });
+        ws.on('pause', () => { setPlaying(false); setTime(ws.getCurrentTime()); if (playbackActive) latest.current.onPlaybackPause?.(ws.getCurrentTime()); playbackActive = false; });
         ws.on('error', e => { if (alive)
             setError(e.message); });
         // Fetch a fresh PCM derivative, then play a blob. This avoids cached source
@@ -117,6 +118,7 @@ export default function Waveform({ url, intervals = [], editable = false, onInte
     useEffect(() => { wave.current?.setOptions({ height }); }, [height]);
     useEffect(() => { if (!visible)
         wave.current?.pause(); }, [visible]);
+    useEffect(() => { if (ready && !playing && Number.isFinite(editCursor) && Math.abs(wave.current.getCurrentTime() - editCursor) > .0001) wave.current.setTime(editCursor); }, [editCursor, ready, playing]);
     function clearPlaybackSelection() { selectionRegion.current?.remove(); selectionRegion.current = null; selectionRef.current = null; setSelection(null); }
     function playSelected() { const item = intervals[selectedIndex]; if (!item)
         return; clearPlaybackSelection(); wave.current.play(item.start, item.end).catch(e => setError(e.message)); }
@@ -126,11 +128,11 @@ export default function Waveform({ url, intervals = [], editable = false, onInte
         const range = selectionRef.current;
         (range ? ws.play(range.start, range.end) : ws.play()).catch(e => setError(e.message));
     } }
-    return <section className="wave" tabIndex={0} onKeyDown={event => { if (event.key === ' ' && selectionRef.current && !event.target.matches('input,textarea,button')) {
+    return <section className="wave" tabIndex={0} onKeyDown={event => { if (event.key === ' ' && !event.target.matches('input,textarea,button')) {
         event.preventDefault();
         event.stopPropagation();
         togglePlay();
     }
     else
-        onKeyDown?.(event); }}><WaveNavigation ws={wave.current} ready={ready} duration={duration} time={time} intervals={intervals} selectedIndex={selectedIndex} editable={editable} onSelectInterval={onSelectInterval} onIntervalsChange={onIntervalsChange} selection={selection} onClearSelection={clearPlaybackSelection} detailed={height >= 140}><div className="wave-canvas" ref={container}/></WaveNavigation>{boundaryTime !== null && <div className="boundary-time-hint" role="status">{tr("\u8FB9\u754C")}{boundaryTime.toFixed(3)}{tr("\u79D2")}</div>}{error ? <div className="error"><p>{tr("\u97F3\u9891\u52A0\u8F7D\u5931\u8D25\uFF1A")}{tr(error)}</p><button onClick={() => setAttempt(a => a + 1)}>{tr("\u91CD\u65B0\u52A0\u8F7D\u97F3\u9891")}</button></div> : <><div className="audio-controls"><button disabled={!ready} onClick={togglePlay}>{playing ? tr("\u2161 \u6682\u505C") : ready ? selection ? tr("\u25B6 \u64AD\u653E\u9009\u533A") : tr("\u25B6 \u64AD\u653E") : tr("\u52A0\u8F7D\u97F3\u9891\u2026")}</button>{intervals[selectedIndex] && <button disabled={!ready} onClick={playSelected} title={tr("\u64AD\u653E\u9009\u4E2D\u5B57\u8BCD\u7684\u5DE6\u53F3\u8FB9\u754C\u4E4B\u95F4\uFF1B\u4E5F\u53EF\u6309\u7A7A\u683C")}>{tr("\u25B6 \u64AD\u653E\u9009\u4E2D\u5B57\u8BCD")}</button>}<span className="playback-position">{time.toFixed(1)} / {duration.toFixed(1)}{tr("\u79D2")}</span></div><p className="hint">{tr("\u5355\u51FB\u6CE2\u5F62\u533A\u95F4\u5373\u64AD\u653E\u4E24\u6761\u8FB9\u754C\u4E4B\u95F4\uFF1B\u7A7A\u683C\u6216\u64AD\u653E\u9009\u4E2D\u5B57\u8BCD\u53EF\u91CD\u64AD\u3002\u9F20\u6807\u62D6\u9009\u64AD\u653E\u4EFB\u610F\u8303\u56F4\uFF0C\u8FB9\u754C\u624B\u67C4\u4ECD\u7528\u4E8E\u8C03\u6574\u65F6\u95F4\u3002")}</p>{selection && <div className="selection-info" role="status" data-start={selection.start} data-end={selection.end}>{tr("\u9009\u533A")}{selection.start.toFixed(3)}–{selection.end.toFixed(3)}{tr("\u79D2\uFF08")}{(selection.end - selection.start).toFixed(3)}{tr("\u79D2\uFF09")}<button onClick={() => { selectionRegion.current?.remove(); selectionRegion.current = null; selectionRef.current = null; setSelection(null); }}>{tr("\u6E05\u9664\u9009\u533A")}</button></div>}</>}</section>;
+        onKeyDown?.(event); }}><WaveNavigation ws={wave.current} ready={ready} duration={duration} time={time} intervals={intervals} selectedIndex={selectedIndex} editable={editable} onSelectInterval={onSelectInterval} onIntervalsChange={onIntervalsChange} selection={selection} onClearSelection={clearPlaybackSelection} detailed={height >= 140}><div className="wave-canvas" ref={container}/></WaveNavigation>{boundaryTime !== null && <div className="boundary-time-hint" role="status">{tr("\u8FB9\u754C")}{boundaryTime.toFixed(3)}{tr("\u79D2")}</div>}{error ? <div className="error"><p>{tr("\u97F3\u9891\u52A0\u8F7D\u5931\u8D25\uFF1A")}{tr(error)}</p><button onClick={() => setAttempt(a => a + 1)}>{tr("\u91CD\u65B0\u52A0\u8F7D\u97F3\u9891")}</button></div> : <><div className="audio-controls"><button disabled={!ready} onClick={togglePlay}>{playing ? tr("\u2161 \u6682\u505C") : ready ? selection ? tr("\u25B6 \u64AD\u653E\u9009\u533A") : tr("\u25B6 \u64AD\u653E") : tr("\u52A0\u8F7D\u97F3\u9891\u2026")}</button>{intervals[selectedIndex] && <button disabled={!ready} onClick={playSelected} title={tr("\u64AD\u653E\u9009\u4E2D\u5B57\u8BCD\u7684\u5DE6\u53F3\u8FB9\u754C\u4E4B\u95F4\uFF1B\u4E5F\u53EF\u6309\u7A7A\u683C")}>{tr("\u25B6 \u64AD\u653E\u9009\u4E2D\u5B57\u8BCD")}</button>}<span className="playback-position">{time.toFixed(3)} / {duration.toFixed(1)}{tr("\u79D2")}</span></div><p className="hint cursor-help">{tr("红色竖线是播放／编辑光标；暂停后停在当前位置，Enter 增加边界。Shift + 单击只定位、不播放；空格播放／暂停。")}</p><p className="hint">{tr("\u5355\u51FB\u6CE2\u5F62\u533A\u95F4\u5373\u64AD\u653E\u4E24\u6761\u8FB9\u754C\u4E4B\u95F4\uFF1B\u7A7A\u683C\u6216\u64AD\u653E\u9009\u4E2D\u5B57\u8BCD\u53EF\u91CD\u64AD\u3002\u9F20\u6807\u62D6\u9009\u64AD\u653E\u4EFB\u610F\u8303\u56F4\uFF0C\u8FB9\u754C\u624B\u67C4\u4ECD\u7528\u4E8E\u8C03\u6574\u65F6\u95F4\u3002")}</p>{selection && <div className="selection-info" role="status" data-start={selection.start} data-end={selection.end}>{tr("\u9009\u533A")}{selection.start.toFixed(3)}–{selection.end.toFixed(3)}{tr("\u79D2\uFF08")}{(selection.end - selection.start).toFixed(3)}{tr("\u79D2\uFF09")}<button onClick={() => { selectionRegion.current?.remove(); selectionRegion.current = null; selectionRef.current = null; setSelection(null); }}>{tr("\u6E05\u9664\u9009\u533A")}</button></div>}</>}</section>;
 }

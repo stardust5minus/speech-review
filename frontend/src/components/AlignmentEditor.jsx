@@ -27,7 +27,7 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
     } }).catch(e => { if (active)
         setMessage(e.message); }); return () => { active = false; }; }, [pid, t.id, t.corrected, t.alignments?.auto?.id, t.alignments?.reviewed?.id]);
     useEffect(() => { onDirty(dirty); }, [dirty]);
-    useEffect(() => { onOverlay({ intervals: draft, editable: canEdit, onIntervalsChange: next => changeRef.current(next), selectedIndex: selected, onCursorChange: time => commands.current.selectTime(time), onSelectInterval: (index, time) => commands.current.select(index, time), onKeyDown: event => commands.current.keyDown(event) }); }, [draft, canEdit, onOverlay, selected]);
+    useEffect(() => { onOverlay({ intervals: draft, editable: canEdit, onIntervalsChange: next => changeRef.current(next), selectedIndex: selected, editCursor: cursor, onPlaybackPause: time => commands.current.pauseAt(time), onCursorChange: time => commands.current.selectTime(time), onSelectInterval: (index, time) => commands.current.select(index, time), onKeyDown: event => commands.current.keyDown(event) }); }, [draft, canEdit, onOverlay, selected, cursor]);
     function choose(v) { setVersion(v); setBase(records[v]); setDraft(records[v] ? fullTier(records[v].intervals, records[v].duration) : []); setSelected(0); setCursor(0); setUndo([]); setMessage(''); }
     function editBoundary(index, field, value) { const changed = draft.map(i => ({ ...i })), old = draft[index]; changed[index][field] = value; if (field === 'start' && index > 0 && Math.abs(draft[index - 1].end - old.start) < 1e-6)
         changed[index - 1].end = value; if (field === 'end' && index + 1 < draft.length && Math.abs(draft[index + 1].start - old.end) < 1e-6)
@@ -76,8 +76,8 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
     } }
     function select(index, time = draft[index]?.start ?? 0) { if (index !== selected)
         labelCaret.current = null; setSelected(index); setCursor(time); }
-    function selectTime(time) { const index = draft.findIndex(i => time >= i.start && time < i.end); if (index >= 0)
-        select(index, time); }
+    function selectTime(time) { if (!Number.isFinite(time)) return; const at = Math.max(0, Math.min(base?.duration ?? time, time)); const index = draft.findIndex(i => at >= i.start && at < i.end); if (index >= 0) select(index, at); else setCursor(at); }
+    function pauseAt(time) { setCursor(time); const index = draft.findIndex(i => time > i.start + .0001 && time < i.end - .0001); if (index >= 0) select(index, time); }
     function applyOperation(operation) { try {
         const result = operation();
         changeRef.current(result.intervals);
@@ -133,7 +133,7 @@ export default function AlignmentEditor({ trial: t, pid, disabled, alignBusy, on
             changeRef.current(draft.map((i, k) => k === selected ? { ...i, text: i.text + e.key } : i));
         }
     }
-    commands.current = { select, selectTime, keyDown };
+    commands.current = { select, selectTime, pauseAt, keyDown };
     return <section className="alignment-editor" tabIndex={0} onKeyDown={keyDown}><div className="alignment-title"><h3>{tr("\u5F3A\u5236\u5BF9\u9F50 \u00B7 TextGrid")}</h3><span>{tr("MFA \u00B7 \u4EBA\u5DE5\u4FEE\u8BA2\u6587\u672C")}</span></div>
  <div className="alignment-actions"><button disabled={!t.saved || !t.corrected?.trim() || disabled || alignBusy || dirty} onClick={() => onStart(t.id)}>{alignBusy ? tr("MFA \u5BF9\u9F50\u4EFB\u52A1\u8FD0\u884C\u4E2D\u2026") : records.auto ? tr("\u91CD\u65B0\u5F3A\u5236\u5BF9\u9F50") : tr("\u5F3A\u5236\u5BF9\u9F50\u5DF2\u4FDD\u5B58\u6587\u672C")}</button><label className={'button ' + (!t.saved || disabled || dirty ? 'inactive' : '')}>{tr("\u5BFC\u5165 Praat TextGrid")}<input type="file" accept=".TextGrid,.textgrid" hidden disabled={!t.saved || disabled || dirty || saving} onChange={e => { importFile(e.target.files[0]); e.target.value = ''; }}/></label>{base && !stale && !dirty && <a className="button" href={`/api/projects/${pid}/trials/${t.id}/textgrid?version=${version}`}>{tr("\u4E0B\u8F7D")}{version === 'reviewed' ? tr("\u4EBA\u5DE5\u7248") : tr("\u81EA\u52A8\u7248")} TextGrid</a>}</div>
  {!t.saved && <p className="hint">{tr("\u5148\u590D\u542C\u5E76 Save \u4FEE\u8BA2\u6587\u5B57\uFF0C\u518D\u8FD0\u884C\u5BF9\u9F50\u3002\u5BF9\u9F50\u4E0D\u4F1A\u4F7F\u7528\u539F\u59CB Whisper \u6587\u672C\u4EE3\u66FF\u4EBA\u5DE5\u6587\u672C\u3002")}</p>}

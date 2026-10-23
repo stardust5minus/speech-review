@@ -5,9 +5,10 @@ import subprocess
 import platform
 from pathlib import Path
 from . import storage
+from .external_process import run as run_external
 
 ROOT=Path(__file__).resolve().parents[1]
-RUNTIME=ROOT/'runtime'
+RUNTIME=Path(os.getenv('SPEECH_REVIEW_RUNTIME',str(ROOT/'runtime')))
 
 def command(args):
     explicit=os.getenv('MFA_EXECUTABLE')
@@ -42,7 +43,7 @@ def run(args,log_path,timeout=1800):
     log_path=Path(log_path)
     log_path.parent.mkdir(parents=True,exist_ok=True)
     with log_path.open('w',encoding='utf-8') as log:
-        result=subprocess.run(command(args),stdout=log,stderr=subprocess.STDOUT,env=environment(),timeout=timeout,
+        result=run_external(command(args),stdout=log,stderr=subprocess.STDOUT,env=environment(),timeout=timeout,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
     if result.returncode:
         tail=log_path.read_text(encoding='utf-8',errors='replace')[-4000:]

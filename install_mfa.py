@@ -6,13 +6,15 @@ import io
 import os
 import platform
 import subprocess
+import sys
 import tarfile
 import urllib.request
 from pathlib import Path
+from backend.external_process import run as run_external
 
 root=Path(__file__).resolve().parent
-runtime=root/'runtime'
-runtime.mkdir(exist_ok=True)
+runtime=Path(os.getenv('SPEECH_REVIEW_RUNTIME',str(root/'runtime')))
+runtime.mkdir(parents=True,exist_ok=True)
 windows=platform.system()=='Windows'
 if platform.machine().lower() not in ('amd64','x86_64') or platform.system() not in ('Windows','Linux'):
     raise RuntimeError('此安装脚本支持 Windows x64 与 Colab/Linux x64')
@@ -26,5 +28,6 @@ if not exe.exists():
         exe.write_bytes(archive.extractfile(member).read())
 if not windows:exe.chmod(exe.stat().st_mode|0o111)
 if not (runtime/'mfa'/('Scripts' if windows else 'bin')/('mfa.exe' if windows else 'mfa')).exists():
-    subprocess.run([str(exe),'--root-prefix',str(runtime/'mamba'),'create','-p',str(runtime/'mfa'),'-c','conda-forge','--override-channels','python=3.11','montreal-forced-aligner=3.3.10','-y'],check=True)
+    run_external([str(exe),'--root-prefix',str(runtime/'mamba'),'create','-p',str(runtime/'mfa'),'-c','conda-forge','--override-channels','python=3.11','montreal-forced-aligner=3.3.10','-y'],check=True,
+        stdout=sys.stdout,stderr=sys.stderr,creationflags=subprocess.CREATE_NO_WINDOW if windows else 0)
 print('MFA environment ready. Mandarin models will be prepared at first alignment.',flush=True)

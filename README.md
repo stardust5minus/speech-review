@@ -6,6 +6,12 @@ Whisper transcription, audio review, Montreal Forced Aligner (MFA) alignment, an
 
 Choose **English** or **中文** in the page header. The preference is remembered on the current browser and origin. Switching languages does not reload the project or discard unsaved edits. Transcripts, interval labels, notes, and filenames stay in their original language.
 
+## Windows app
+
+[Download the Windows x64 preview](https://github.com/stardust5minus/speech-review/releases/download/v0.1.0/SpeechReview-Windows-x64.exe)
+
+Double-click the EXE to open the workspace in your browser. Python is included. Use **Install MFA (first use)** in the launcher for alignment; Whisper and Mandarin models download when first needed. Keep the launcher open while working and save before closing it. Data persists under `%LOCALAPPDATA%\SpeechReview`, separate from the EXE and from source-code installations. See [Windows instructions](desktop/README.md). This is an unsigned preview; GPU execution and first-time MFA installation need validation on each target setup.
+
 ## Run locally
 
 Use Python 3.11 or 3.12. The built frontend is included; Node.js is needed only to rebuild it.

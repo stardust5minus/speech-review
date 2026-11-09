@@ -24,6 +24,29 @@ class NotebookProfiles(unittest.TestCase):
         result=profiles.analyze('零 一 四 五 六 七 八 九 十','homo')
         self.assertEqual(result['spaced'],'零 一 四 五 六 七 八 九 十')
         self.assertEqual(result['notebook_result'],'铃 衣 寺 舞 遛 妻 疤 酒 石')
+    def test_homo_arabic_digits_and_ambiguous_ten(self):
+        result=profiles.analyze('698714015','homo')
+        self.assertEqual(result['notebook_result'],'遛 酒 疤 妻 衣 寺 铃 衣 舞')
+        self.assertFalse(result['notebook_flags']['wrong_word'])
+        grouped=profiles.analyze('418-916-047','homo')
+        self.assertEqual(grouped['notebook_result'],'寺 衣 疤 酒 衣 遛 铃 寺 妻')
+        self.assertFalse(grouped['notebook_flags']['wrong_word'])
+        mixed=profiles.analyze('１０ 嗯 十 2 3','homo')
+        self.assertEqual(mixed['notebook_result'],'石 嗯 石 2 3')
+        self.assertTrue(any(i['kind']=='ambiguous_digits' for i in mixed['issues']))
+        self.assertTrue(mixed['notebook_flags']['wrong_word'])
+        self.assertEqual(profiles.analyze('718-60-10-549','homo')['notebook_result'],'妻 衣 疤 遛 铃 石 舞 寺 酒')
+        self.assertEqual(profiles.analyze('108194765','homo')['notebook_result'],'衣 铃 疤 衣 酒 寺 妻 遛 舞')
+
+    def test_existing_homo_refresh_preserves_human_review(self):
+        row=dict(condition='homo',asr={'profile':'homo','raw':'698714015'},saved=True,corrected='人工确认')
+        profiles.refresh_homo_result(row)
+        self.assertEqual(row['corrected'],'人工确认')
+        self.assertEqual(row['qc']['notebook_result'],'遛 酒 疤 妻 衣 寺 铃 衣 舞')
+        row.update(saved=False,corrected='6 9 8 7 1 4 0 1 5')
+        profiles.refresh_homo_result(row)
+        self.assertEqual(row['corrected'],row['qc']['notebook_result'])
+        self.assertEqual(row['asr']['raw'],'698714015')
     def test_nonhomo_exact_script_output_separate(self):
         raw='指 课 指'
         result=profiles.analyze(raw,'nonhomo')

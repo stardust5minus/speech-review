@@ -150,7 +150,7 @@ def run_job(jid,pid,tids):
                 row['asr']=result
                 row['qc']=qc.analyze(result['raw'],row['condition'],result['avg_logprob'])
                 if not row['saved']:
-                    row['corrected']=row['qc']['spaced']
+                    row['corrected']=profiles.review_prefill(row['qc'])
             storage.update(pid,tid,apply)
         except Exception as e:
             job['errors'].append({'trial':tid,'message':str(e)})

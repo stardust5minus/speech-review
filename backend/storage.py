@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock
-from .profiles import infer_condition
+from .profiles import infer_condition, refresh_homo_result
 
 DATA = Path(os.getenv('SPEECH_REVIEW_DATA', str(Path(__file__).resolve().parents[1]/'data')))
 LOCK = RLock()
@@ -23,6 +23,7 @@ def read(pid):
     for t in project['trials']:
         if t['condition']=='unknown':
             t['condition']=infer_condition(t['filename'])
+        refresh_homo_result(t)
     return project
 
 def write(project):
